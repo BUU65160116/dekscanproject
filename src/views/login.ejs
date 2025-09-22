@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ล็อกอินเช็คอินโต๊ะ</title>
+  <!-- คุณมีไฟล์ public/css.css อยู่แล้ว ใช้อันนี้เลย -->
+  <link rel="stylesheet" href="/css.css">
+  <style>
+    /* กันพังถ้า css.css ยังว่าง */
+    body{margin:0;font-family:system-ui,"Noto Sans Thai",sans-serif;background:#0f1115;color:#eaeef5}
+    .wrap{min-height:100dvh;display:grid;place-items:center;padding:24px}
+    .card{width:100%;max-width:420px;background:#171a22;border:1px solid #252a37;border-radius:16px;padding:20px}
+    .field{margin:12px 0} label{display:block;margin-bottom:6px}
+    input{width:100%;padding:12px;border-radius:10px;border:1px solid #2a3142;background:#0f131a;color:#eaeef5}
+    .btn{width:100%;padding:12px;border:0;border-radius:10px;margin-top:10px;background:#3a7afe;color:#fff;font-weight:700}
+    .muted{color:#aab3c5;font-size:12px;margin-top:10px}
+    .msg{padding:10px;border-radius:10px;margin:10px 0}
+    .ok{background:#153a23;color:#b6ffd1;border:1px solid #2b7a46}
+    .err{background:#3a1b26;color:#ffb3c1;border:1px solid #7a2d3b}
+    a{color:#7fb0ff}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1 style="margin:0 0 8px">ล็อกอินเช็คอินโต๊ะ</h1>
+      <p class="muted">กรอกเบอร์ที่เคยสมัครไว้</p>
+
+      <% if (error) { %><div class="msg err"><%= error %></div><% } %>
+      <% if (msg)   { %><div class="msg ok"><%= msg %></div><% } %>
+
+      <form action="/login" method="post" novalidate>
+        <input type="hidden" name="shopCode" value="<%= shop %>">
+        <input type="hidden" name="tableNumber" value="<%= table %>">
+
+        <div class="field">
+          <label for="phone">เบอร์โทร</label>
+          <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="เช่น 0812345678" required />
+        </div>
+
+        <button class="btn" type="submit">ยืนยันเช็คอิน</button>
+      </form>
+
+      <!-- ลิงก์ไปสมัคร พร้อมพารามิเตอร์เดิม -->
+      <p class="muted" style="margin-top:14px">
+        ยังไม่เคยสมัคร? <a href="/register?<%=
+          `shop=${encodeURIComponent(shop||'')}&table=${encodeURIComponent(table||'')}`
+        %>">สมัครเลย</a>
+      </p>
+    </section>
+  </main>
+</body>
+</html>
