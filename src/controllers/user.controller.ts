@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import { pool } from "../services/db";
 
-/** เบอร์ไทย 10 หลัก 0-9 */
+/** ✅ ตรวจเบอร์ไทย 10 หลัก */
 const isValidThaiPhone = (p: string) => /^[0-9]{10}$/.test((p || "").trim());
 
-/** แปลงเลขโต๊ะจากข้อความ -> number (เช่น "5" -> 5) ถ้าไม่ใช่เลข => null */
+/** ✅ แปลงเลขโต๊ะเป็น number; ไม่ใช่เลขหรือ <=0 ให้คืน null */
 const toIntTable = (x: string) => {
   const n = Number((x || "").toString().trim());
   return Number.isFinite(n) && n > 0 ? n : null;
@@ -34,7 +34,7 @@ export const submitLogin = async (req: Request, res: Response) => {
     shopCode?: string; tableNumber?: string; phone?: string;
   };
 
-  // ตรวจความครบถ้วน
+  // 1) ตรวจความครบถ้วน
   if (!shopCode || !tableNumber || !phone) {
     return res.render("login", {
       shop: shopCode || "",
@@ -44,7 +44,7 @@ export const submitLogin = async (req: Request, res: Response) => {
     });
   }
 
-  // ตรวจรูปแบบเบอร์
+  // 2) ตรวจรูปแบบเบอร์
   if (!isValidThaiPhone(phone)) {
     return res.render("login", {
       shop: shopCode,
@@ -55,11 +55,11 @@ export const submitLogin = async (req: Request, res: Response) => {
   }
 
   try {
+    // 3) หา customer จากเบอร์
     const [rows] = await pool.query<any[]>(
-      "SELECT CustomerID, Name FROM customer WHERE PhoneNumber = ?",
+      "SELECT CustomerID, Name, PhoneNumber FROM customer WHERE PhoneNumber = ?",
       [phone.trim()]
     );
-
     if (rows.length === 0) {
       return res.render("login", {
         shop: shopCode,
@@ -69,7 +69,16 @@ export const submitLogin = async (req: Request, res: Response) => {
       });
     }
 
-    // บันทึกลง scanlog (ต้องมีแถวของโต๊ะใน tableqr ก่อนเพื่อให้ FK ไม่พัง)
+    // 4) เก็บตัวตน + บริบทโต๊ะ/ร้านลง session
+    req.session.user = {
+      CustomerID: rows[0].CustomerID,
+      Name: rows[0].Name,
+      PhoneNumber: rows[0].PhoneNumber,
+      Shop: String(shopCode),
+      Table: String(tableNumber),
+    };
+
+    // 5) บันทึกลง scanlog (ถ้า TableID เป็นตัวเลขและมีอยู่จริง)
     const tableId = toIntTable(tableNumber);
     if (tableId !== null) {
       try {
@@ -78,7 +87,7 @@ export const submitLogin = async (req: Request, res: Response) => {
           [rows[0].CustomerID, tableId]
         );
       } catch (err: any) {
-        // จับ FK error ให้แสดงข้อความเข้าใจง่าย
+        // จับ FK error -> แจ้งให้เพิ่มโต๊ะใน tableqr ก่อน
         if (err?.code === "ER_NO_REFERENCED_ROW_2") {
           return res.render("login", {
             shop: shopCode,
@@ -88,18 +97,15 @@ export const submitLogin = async (req: Request, res: Response) => {
               "ไม่พบโต๊ะนี้ในระบบ (TableID ไม่ตรงกับ tableqr) กรุณาเพิ่มโต๊ะใน tableqr ก่อน",
           });
         }
+        // ข้อผิดพลาดอื่นให้โยนไปให้ catch ด้านล่างจัดการ
         throw err;
       }
     }
 
-    return res.render("login", {
-      shop: shopCode,
-      table: tableNumber,
-      msg: `เช็คอินสำเร็จ: สวัสดีคุณ ${rows[0].Name}`,
-      error: null,
-    });
+    // 6) ไปหน้า home (ใช้ข้อมูลใน session ไม่ต้องพ่วง query)
+    return res.redirect("/home");
   } catch (e) {
-    console.error(e);
+    console.error("submitLogin error:", e);
     return res.render("login", {
       shop: shopCode,
       table: tableNumber,
@@ -115,7 +121,7 @@ export const submitRegister = async (req: Request, res: Response) => {
     shopCode?: string; tableNumber?: string; name?: string; phone?: string;
   };
 
-  // ตรวจความครบถ้วน
+  // 1) ตรวจความครบถ้วน
   if (!shopCode || !tableNumber || !name || !phone) {
     return res.render("register", {
       shop: shopCode || "",
@@ -125,7 +131,7 @@ export const submitRegister = async (req: Request, res: Response) => {
     });
   }
 
-  // ตรวจรูปแบบเบอร์
+  // 2) ตรวจรูปแบบเบอร์
   if (!isValidThaiPhone(phone)) {
     return res.render("register", {
       shop: shopCode,
@@ -136,7 +142,7 @@ export const submitRegister = async (req: Request, res: Response) => {
   }
 
   try {
-    // กันเบอร์ซ้ำ
+    // 3) กันเบอร์ซ้ำ
     const [dups] = await pool.query<any[]>(
       "SELECT CustomerID FROM customer WHERE PhoneNumber = ?",
       [phone.trim()]
@@ -150,14 +156,37 @@ export const submitRegister = async (req: Request, res: Response) => {
       });
     }
 
-    // สมัครใหม่
+    // 4) สมัครใหม่
     const [ins]: any = await pool.query(
       "INSERT INTO customer (Name, PhoneNumber) VALUES (?, ?)",
       [name.trim(), phone.trim()]
     );
     const newId = ins.insertId;
 
-    // บันทึกลง scanlog
+    // 5) อ่านข้อมูลลูกค้าที่เพิ่งสมัคร (เพื่อเก็บใน session)
+    const [newRows] = await pool.query<any[]>(
+      "SELECT CustomerID, Name, PhoneNumber FROM customer WHERE CustomerID = ?",
+      [newId]
+    );
+    if (newRows.length === 0) {
+      return res.render("register", {
+        shop: shopCode,
+        table: tableNumber,
+        msg: null,
+        error: "สมัครสำเร็จ แต่ไม่พบข้อมูลผู้ใช้ กรุณาลองใหม่",
+      });
+    }
+
+    // 6) เก็บ session
+    req.session.user = {
+      CustomerID: newRows[0].CustomerID,
+      Name: newRows[0].Name,
+      PhoneNumber: newRows[0].PhoneNumber,
+      Shop: String(shopCode),
+      Table: String(tableNumber),
+    };
+
+    // 7) บันทึกลง scanlog
     const tableId = toIntTable(tableNumber);
     if (tableId !== null) {
       try {
@@ -175,7 +204,6 @@ export const submitRegister = async (req: Request, res: Response) => {
               "ไม่พบโต๊ะนี้ในระบบ (TableID ไม่ตรงกับ tableqr) กรุณาเพิ่มโต๊ะใน tableqr ก่อน",
           });
         }
-        // กันชน UNIQUE ที่เบอร์ในกรณีแข่งกันกด
         if (err?.code === "ER_DUP_ENTRY") {
           return res.render("register", {
             shop: shopCode,
@@ -188,14 +216,10 @@ export const submitRegister = async (req: Request, res: Response) => {
       }
     }
 
-    return res.render("register", {
-      shop: shopCode,
-      table: tableNumber,
-      msg: "สมัครสำเร็จ! ตอนนี้คุณสามารถล็อกอินได้เลย",
-      error: null,
-    });
+    // 8) ไปหน้า home
+    return res.redirect("/home");
   } catch (e) {
-    console.error(e);
+    console.error("submitRegister error:", e);
     return res.render("register", {
       shop: shopCode,
       table: tableNumber,

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>หน้าแรก</title>
+  <style> body { font-family:sans-serif; margin:2rem } .card{border:1px solid #ddd;padding:1rem;border-radius:8px;max-width:420px} </style>
+</head>
+<body>
+  <div class="card">
+    <h2>ยินดีต้อนรับ <%= user?.Name %></h2>
+    <p>เบอร์โทร: <strong><%= user?.PhoneNumber %></strong></p>
+
+    <% if (shop && table) { %>
+      <p>คุณกำลังอยู่ที่ร้าน <b><%= shop %></b> โต๊ะ <b><%= table %></b></p>
+    <% } else { %>
+      <p style="color:#888">ยังไม่มีข้อมูลโต๊ะใน session</p>
+    <% } %>
+
+    <p><a href="/logout">ออกจากระบบ</a></p>
+  </div>
+</body>
+</html>

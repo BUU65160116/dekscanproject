@@ -1,13 +1,22 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
-
+import session from "express-session";
 import { pool } from "./services/db";
 import publicRoutes from "./routes/public"; // <-- ใช้เส้นทาง /login, /register
 
 dotenv.config();
 
 const app = express();
+
+app.use(session({
+  secret: process.env.SESSION_SECRET || "dev-secret",
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 1000 * 60 * 60 * 8 } // 8 ชั่วโมง
+}));
+
+
 
 // middlewares พื้นฐาน
 app.use(express.urlencoded({ extended: true }));
