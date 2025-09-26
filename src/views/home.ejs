@@ -16,6 +16,13 @@
     <% } else { %>
       <p style="color:#888">ยังไม่มีข้อมูลโต๊ะใน session</p>
     <% } %>
+    
+      <!-- ✅ แต้มปัจจุบัน -->
+  <div class="points-box" style="margin-top:12px;">
+    <strong>แต้มสะสม:</strong> <%= typeof points !== 'undefined' ? points : 0 %> แต้ม
+  </div>
+
+    
 
     <p><a href="/logout">ออกจากระบบ</a></p>
   </div>
