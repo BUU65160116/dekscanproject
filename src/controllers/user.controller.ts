@@ -62,11 +62,7 @@ export const submitLogin = async (req: Request, res: Response) => {
       Shop: shopCode,
       Table: String(tableNumber),
     };
-
-    // สร้างแถว points ถ้ายังไม่มี
-  await ensurePointsRow(rows[0].CustomerID);
   
-
     // 5) บันทึกลง scanlog (ถ้า TableID เป็นตัวเลขและมีอยู่จริง)
     const tableId = toIntTable(tableNumber);
     if (tableId !== null) {
@@ -95,7 +91,7 @@ export const submitLogin = async (req: Request, res: Response) => {
 
 /** POST /register */
 export const submitRegister = async (req: Request, res: Response) => {
-  const shopCode = SHOP; // ✅ ร้านเดียว
+  const shopCode = SHOP; //  ร้านเดียว
   const { tableNumber, name, phone } = req.body as {
     shopCode?: string; tableNumber?: string; name?: string; phone?: string;
   };
@@ -132,9 +128,6 @@ export const submitRegister = async (req: Request, res: Response) => {
       Shop: shopCode,
       Table: String(tableNumber),
     };
-
-    // สร้างแถว points ถ้ายังไม่มี
-  await ensurePointsRow(newRows[0].CustomerID);
 
     // 7 บันทึก scanlog
     const tableId = toIntTable(tableNumber);
