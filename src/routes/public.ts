@@ -2,7 +2,7 @@ import { Router } from "express";
 import { showLogin, submitLogin, showRegister, submitRegister } from "../controllers/user.controller";
 import { requireAuth } from "../middlewares/auth"; // ✅ import middleware ที่เราสร้างไว้
 import { getTotalPoints } from "../services/points"; 
-
+import { pool } from "../services/db";
 const SHOP = process.env.SHOP_CODE || "MYBAR";
 const router = Router();
 
@@ -19,15 +19,45 @@ router.get("/home", async (req, res) => {
   if (!req.session?.user) return res.redirect("/login");
 
   const user = req.session.user;
-  const points = await getTotalPoints(user.CustomerID); // ✅ query แต้มปัจจุบัน
+  const points = await getTotalPoints(user.CustomerID); 
+
+  // เช็คอินวันนี้แล้วหรือยัง
+  const [todayRows] = await pool.query<any[]>(
+    "SELECT 1 FROM points_log WHERE CustomerID = ? AND LogDate = CURDATE() LIMIT 1",
+    [user.CustomerID]
+  );
+  const checkedInToday = todayRows.length > 0;
 
   res.render("home", {
+    shop: SHOP,
     user,
     points,
-    shop: SHOP,               // ✅ ร้านเดียว
+    checkedInToday,
     table: user.Table || "",
   });
 });
+
+// ✅ โครงหน้า “รายละเอียดแต้ม”
+router.get("/points", requireAuth, async (req, res) => {
+  const user = req.session.user;
+  // ไว้ค่อยทำจริง — ตอนนี้แค่ stub
+  res.render("points", { user });
+});
+
+// ✅ โครงหน้า “แจกวาปขึ้นจอใหญ่”
+router.get("/warp", requireAuth, (req, res) => {
+  const user = req.session.user;
+  // ไว้ค่อยเชื่อม socket/realtime — ตอนนี้แค่ stub
+  res.render("warp", { user, shop: SHOP });
+});
+
+// ✅ โครงหน้า “แชทเรียลไทม์ (ฝั่งลูกค้า)”
+router.get("/chat", requireAuth, (req, res) => {
+  const user = req.session.user;
+  // ไว้ค่อยต่อ socket.io — ตอนนี้แค่ stub
+  res.render("chat", { user });
+});
+
 
 // ออกจากระบบ
 router.get("/logout", (req, res) => {
