@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import session from "express-session";
 import { pool } from "./services/db";
 import publicRoutes from "./routes/public"; // <-- ใช้เส้นทาง /login, /register
+import adminRouter from "./routes/admin";
 
 dotenv.config();
 
@@ -15,6 +16,12 @@ app.use(session({
   saveUninitialized: false,
   cookie: { maxAge: 1000 * 60 * 60 * 8 } // 8 ชั่วโมง
 }));
+
+//  ตรวจสอบว่ามี body parser สำหรับฟอร์มแล้วหรือยัง
+app.use(express.urlencoded({ extended: true })); // ต้องมี เพื่อรับค่าจาก <form method="POST">
+
+//  หลังจากที่ตั้งค่า session และ middleware อื่น ๆ เสร็จแล้ว ให้ mount router แอดมิน
+app.use("/admin", adminRouter);
 
 
 
@@ -43,7 +50,7 @@ app.get("/dbtest", async (_req, res) => {
   }
 });
 
-// 💡 ผูกเส้นทางหลัก (ต้องมาก่อน listen)
+//  ผูกเส้นทางหลัก (ต้องมาก่อน listen)
 app.use("/", publicRoutes); // <-- เพิ่มบรรทัดนี้
 
 // เริ่มเซิร์ฟเวอร์

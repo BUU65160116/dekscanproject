@@ -11,3 +11,10 @@ declare module "express-session" {
     };
   }
 }
+
+// ขยาย type ของ SessionData เพื่อให้มี isAdmin
+declare module "express-session" {
+  interface SessionData {
+    isAdmin?: boolean; // ใช้เช็คสิทธิ์หลัง login แอดมิน
+  }
+}

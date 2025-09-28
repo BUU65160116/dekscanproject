@@ -1,6 +1,6 @@
 import { pool } from "./db";
 
-/** ✅ สร้าง row ใน points ถ้ายังไม่มี (เริ่ม 0 แต้ม) */
+/**  สร้าง row ใน points ถ้ายังไม่มี (เริ่ม 0 แต้ม) */
 export async function ensurePointsRow(customerId: number) {
   await pool.query(
     "INSERT IGNORE INTO points (CustomerID, TotalPoints) VALUES (?, 0)",
@@ -8,7 +8,7 @@ export async function ensurePointsRow(customerId: number) {
   );
 }
 
-/** ✅ ดึงแต้มปัจจุบันของลูกค้า */
+/**  ดึงแต้มปัจจุบันของลูกค้า */
 export async function getTotalPoints(customerId: number): Promise<number> {
   const [rows] = await pool.query<any[]>(
     "SELECT TotalPoints FROM points WHERE CustomerID = ?",
@@ -18,7 +18,7 @@ export async function getTotalPoints(customerId: number): Promise<number> {
 }
 
 /**
- * ✅ ให้แต้ม 1 แต้ม ครั้งแรกของวัน (ระบบร้านเดียว)
+ *  ให้แต้ม 1 แต้ม ครั้งแรกของวัน (ระบบร้านเดียว)
  * - ถ้าเคยให้วันนี้แล้ว จะไม่เพิ่มซ้ำ
  * - ใช้ทรานแซกชันกัน race condition
  */

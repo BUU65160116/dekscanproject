@@ -37,21 +37,21 @@ router.get("/home", async (req, res) => {
   });
 });
 
-// ✅ โครงหน้า “รายละเอียดแต้ม”
+//  โครงหน้า “รายละเอียดแต้ม”
 router.get("/points", requireAuth, async (req, res) => {
   const user = req.session.user;
   // ไว้ค่อยทำจริง — ตอนนี้แค่ stub
   res.render("points", { user });
 });
 
-// ✅ โครงหน้า “แจกวาปขึ้นจอใหญ่”
+//  โครงหน้า “แจกวาปขึ้นจอใหญ่”
 router.get("/warp", requireAuth, (req, res) => {
   const user = req.session.user;
   // ไว้ค่อยเชื่อม socket/realtime — ตอนนี้แค่ stub
   res.render("warp", { user, shop: SHOP });
 });
 
-// ✅ โครงหน้า “แชทเรียลไทม์ (ฝั่งลูกค้า)”
+//  โครงหน้า “แชทเรียลไทม์ (ฝั่งลูกค้า)”
 router.get("/chat", requireAuth, (req, res) => {
   const user = req.session.user;
   // ไว้ค่อยต่อ socket.io — ตอนนี้แค่ stub
