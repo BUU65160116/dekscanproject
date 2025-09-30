@@ -1,10 +1,10 @@
 # Node modules
 node_modules/
 
-# Environment files
-.env
-.env.local
-.env.*.local
+# # Environment files
+# .env
+# .env.local
+# .env.*.local
 
 # Build output
 dist/

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Home • <%= shop %></title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 16px; }
+    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn { display:inline-block; padding:10px 14px; border-radius:10px; border:1px solid #ccc; text-decoration:none; }
+    .btn-primary { background:#111; color:#fff; border-color:#111; }
+    .chip { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; }
+    .chip-ok { background:#e6ffed; color:#067d3c; border:1px solid #b5efc8; }
+    .chip-warn { background:#fff0f0; color:#b00020; border:1px solid #ffd6d6; }
+  </style>
+</head>
+<body>
+  <h2>สวัสดี <%= user.Name %> • <%= shop %></h2>
+
+  <div class="card">
+    <p><strong>เบอร์โทร:</strong> <%= user.PhoneNumber %></p>
+    <p><strong>โต๊ะ:</strong> <%= table %></p>
+    <p><strong>แต้มสะสม:</strong> <span style="font-size:20px;"><%= points %></span></p>
+    <% if (checkedInToday) { %>
+      <p><span class="chip chip-ok">เช็คอินวันนี้แล้ว (+1)</span></p>
+    <% } else { %>
+      <p><span class="chip chip-warn">ยังไม่ได้เช็คอินวันนี้</span></p>
+    <% } %>
+  </div>
+
+  <div class="row">
+    <a class="btn btn-primary" href="/points">ดูรายละเอียดแต้ม</a>
+    <a class="btn" href="/warp">แจกวาปขึ้นจอ</a>
+    <a class="btn" href="/chat">เข้าแชทเรียลไทม์</a>
+    <a class="btn" href="/logout">ออกจากระบบ</a>
+  </div>
+</body>
+</html>

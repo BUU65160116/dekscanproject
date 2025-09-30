@@ -10,3 +10,4 @@ export const pool = mysql.createPool({
   database: process.env.DB_NAME || "barsystem",
   connectionLimit: 10
 });
+
