@@ -3,13 +3,17 @@ import path from "path";
 import dotenv from "dotenv";
 import session from "express-session";
 import { pool } from "./services/db";
-import publicRoutes from "./routes/public"; // <-- ใช้เส้นทาง /login, /register
-import adminRouter from "./routes/admin";
+
+import publicRoutes from "./routes/public";  // เส้นทาง /login, /register
+import adminRouter from "./routes/admin";    // เส้นทางฝั่งแอดมิน
+import screenRouter from "./routes/screen";  // ✅ จอใหญ่ (Big Screen) ที่เพิ่มเข้ามา
 
 dotenv.config();
 
 const app = express();
 
+/* ------------------ Core & Middlewares ------------------ */
+// session
 app.use(session({
   secret: process.env.SESSION_SECRET || "dev-secret",
   resave: false,
@@ -17,29 +21,20 @@ app.use(session({
   cookie: { maxAge: 1000 * 60 * 60 * 8 } // 8 ชั่วโมง
 }));
 
-//  ตรวจสอบว่ามี body parser สำหรับฟอร์มแล้วหรือยัง
-app.use(express.urlencoded({ extended: true })); // ต้องมี เพื่อรับค่าจาก <form method="POST">
-
-//  หลังจากที่ตั้งค่า session และ middleware อื่น ๆ เสร็จแล้ว ให้ mount router แอดมิน
-app.use("/admin", adminRouter);
-
-
-
-// middlewares พื้นฐาน
-app.use(express.urlencoded({ extended: true }));
+// body parsers (อย่าให้ซ้ำ)
+app.use(express.urlencoded({ extended: true })); // รองรับ <form method="POST">
 app.use(express.json());
 
-// ตั้งค่า view engine (เตรียมไว้สำหรับหน้าล็อกอิน/สมัคร)
+// view engine
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// เสิร์ฟไฟล์ static เช่น /public/css.css
+// static files (เช่น /public/screen.css)
 app.use(express.static(path.join(process.cwd(), "public")));
 
-// เส้นทางทดสอบว่าเซิร์ฟเวอร์วิ่ง
+/* ------------------ Health & Tools ------------------ */
 app.get("/health", (_req, res) => res.send("OK"));
 
-// ทดสอบเชื่อม DB
 app.get("/dbtest", async (_req, res) => {
   try {
     const [rows] = await pool.query("SELECT NOW() AS now");
@@ -50,10 +45,12 @@ app.get("/dbtest", async (_req, res) => {
   }
 });
 
-//  ผูกเส้นทางหลัก (ต้องมาก่อน listen)
-app.use("/", publicRoutes); // <-- เพิ่มบรรทัดนี้
+/* ------------------ Routes ------------------ */
+app.use("/admin", adminRouter);   // ฝั่งแอดมิน
+app.use("/screen", screenRouter); // ✅ จอใหญ่ (Big Screen) เปิดที่ /screen
+app.use("/", publicRoutes);       // หน้า public (login/register)
 
-// เริ่มเซิร์ฟเวอร์
+/* ------------------ Start Server ------------------ */
 const PORT = Number(process.env.PORT || 3000);
 app.listen(PORT, () => {
   console.log(`Server running → http://localhost:${PORT}`);

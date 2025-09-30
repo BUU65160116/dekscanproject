@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/screen.css" />
+</head>
+<body>
+  <div class="screen-wrap">
+    <header class="screen-header">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>Chat & Warp Board</h1>
+      </div>
+      <div class="status">
+        <span class="pill live">LIVE</span>
+        <span id="clock" class="clock">--:--</span>
+      </div>
+    </header>
+
+    <main class="screen-grid">
+      <!-- คอลัมน์ซ้าย: แชท -->
+      <section class="panel">
+        <h2 class="panel-title">แชท</h2>
+        <ul id="chatList" class="list">
+          <!-- Placeholder เริ่มต้น -->
+          <li class="empty">ยังไม่มีข้อความแชท</li>
+        </ul>
+      </section>
+
+      <!-- คอลัมน์ขวา: วาป -->
+      <section class="panel">
+        <h2 class="panel-title">วาป</h2>
+        <ul id="warpList" class="list">
+          <!-- Placeholder เริ่มต้น -->
+          <li class="empty">ยังไม่มีวาป</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="screen-footer">
+      <div class="ticker" id="ticker">
+        <div class="ticker-track">
+          <!-- ข้อความวิ่งตัวอย่าง (แก้/ปิดทีหลังได้) -->
+          <span>ยินดีต้อนรับสู่ร้านของเรา • โปรดงดใช้คำหยาบและสแปม • ขอบคุณที่ให้ความร่วมมือ</span>
+          <span>ยินดีต้อนรับสู่ร้านของเรา • โปรดงดใช้คำหยาบและสแปม • ขอบคุณที่ให้ความร่วมมือ</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // นาฬิกามุมขวาบน
+    const elClock = document.getElementById("clock");
+    function pad(n){ return n.toString().padStart(2,"0"); }
+    function tick(){
+      const d = new Date();
+      elClock.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    setInterval(tick, 1000); tick();
+
+    // TODO: จุด hook สำหรับรับ message จริง (socket.io / fetch)
+    // ตัวอย่าง mock ชั่วคราว (ลบได้):
+    setTimeout(() => {
+      const chat = document.getElementById("chatList");
+      chat.innerHTML = "";
+      ["สวัสดีครับ", "เปิดเพลงได้ไหม", "ขอโต๊ะเพิ่ม 1 ตัว"].forEach((txt, i) => {
+        const li = document.createElement("li");
+        li.className = "item";
+        li.innerHTML = `<span class="name">Guest#${i+1}</span><span class="msg">${txt}</span>`;
+        chat.appendChild(li);
+      });
+
+      const warp = document.getElementById("warpList");
+      warp.innerHTML = "";
+      [
+        { name: "IG: @barcool", link: "https://instagram.com/barcool" },
+        { name: "FB: Bar Cool", link: "https://facebook.com/barcool" }
+      ].forEach((w) => {
+        const li = document.createElement("li");
+        li.className = "item";
+        li.innerHTML = `<span class="name">${w.name}</span><a class="link" href="${w.link}" target="_blank" rel="noopener">เปิดลิงก์</a>`;
+        warp.appendChild(li);
+      });
+    }, 600);
+  </script>
+</body>
+</html>

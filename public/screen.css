@@ -1,0 +1,151 @@
+/* ===== Big Screen (TV) ===== */
+:root{
+  --bg:#0b0f14;
+  --card:#121823;
+  --muted:#7d8aa5;
+  --text:#eaf1ff;
+  --accent:#5aa2ff;
+  --accent-2:#2ee6a6;
+  --border:#1e2735;
+  --danger:#ff4769;
+}
+
+*{ box-sizing: border-box; }
+html,body{
+  height:100%;
+  margin:0;
+  font-family: system-ui, "Noto Sans Thai", Inter, Segoe UI, sans-serif;
+  color:var(--text);
+  background:var(--bg);
+  overflow:hidden; /* กันการ scroll ในจอทีวี */
+  cursor:none; /* ซ่อนเมาส์ */
+}
+
+.screen-wrap{
+  display:flex;
+  flex-direction:column;
+  height:100%;
+  width:100%;
+  padding:16px;
+  gap:12px;
+}
+
+/* Header */
+.screen-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+.brand{
+  display:flex; align-items:center; gap:12px;
+}
+.brand .dot{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--accent-2); box-shadow:0 0 12px var(--accent-2);
+}
+.brand h1{
+  margin:0; font-weight:700; letter-spacing:0.4px;
+  font-size: clamp(18px, 2.4vw, 32px);
+}
+.status{ display:flex; align-items:center; gap:10px; }
+.pill{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:6px 10px; border-radius:999px; font-weight:600;
+  font-size: clamp(10px, 1.2vw, 14px);
+  border:1px solid var(--border); background:#0f1520; color:var(--muted);
+}
+.pill.live{
+  color:white; background:linear-gradient(90deg, #ff244a, #ff7b5e);
+  border:none; box-shadow:0 0 16px rgba(255,36,74,0.25);
+}
+.clock{
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(16px, 2.2vw, 28px); color:#cfe1ff;
+}
+
+/* Grid */
+.screen-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:16px;
+  height:100%;
+}
+
+/* Panel */
+.panel{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:14px 14px 8px;
+  display:flex; flex-direction:column; min-height:0;
+}
+.panel-title{
+  margin:0 0 8px 2px;
+  font-size: clamp(16px, 2vw, 26px);
+  font-weight:700; color:#d9e6ff;
+}
+
+.list{
+  list-style:none; margin:0; padding:0;
+  overflow-y:auto; scrollbar-width:thin; min-height:0;
+}
+.list::-webkit-scrollbar{ width:10px; }
+.list::-webkit-scrollbar-thumb{ background:#1c2636; border-radius:12px; }
+.list::-webkit-scrollbar-track{ background:transparent; }
+
+.item, .empty{
+  display:grid;
+  grid-template-columns: 1fr auto;
+  align-items:center;
+  gap:8px;
+  padding:12px;
+  border-bottom:1px dashed #223047;
+}
+.item:last-child, .empty:last-child{ border-bottom:none; }
+
+.name{
+  font-weight:700;
+  font-size: clamp(16px, 1.8vw, 22px);
+  color:#cfe1ff;
+}
+.msg{
+  grid-column: 1 / -1;
+  font-size: clamp(16px, 1.6vw, 20px);
+  color:#eaf1ff;
+  opacity:0.95;
+}
+.link{
+  padding:8px 12px; border-radius:10px; text-decoration:none;
+  color:#001e35; background:var(--accent);
+  font-weight:700; font-size: clamp(12px, 1.3vw, 16px);
+}
+.empty{
+  justify-content:center; color:var(--muted);
+  font-size: clamp(16px, 1.7vw, 20px);
+}
+
+/* Footer ticker */
+.screen-footer{ }
+.ticker{
+  position:relative; height:48px; border:1px solid var(--border);
+  border-radius:16px; overflow:hidden; background:#0f1520;
+}
+.ticker-track{
+  position:absolute; white-space:nowrap; will-change: transform;
+  display:flex; gap:48px; align-items:center; height:100%;
+  animation:ticker 30s linear infinite;
+  padding:0 24px; color:#cde3ff; font-weight:600;
+  font-size: clamp(14px, 1.6vw, 18px);
+}
+@keyframes ticker{
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Responsive: ถ้าจอแนวตั้ง/เล็ก ให้แถวเดียวเรียงลง */
+@media (max-aspect-ratio: 4/3) {
+  .screen-grid{
+    grid-template-columns: 1fr;
+  }
+}
