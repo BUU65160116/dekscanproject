@@ -1,80 +1,215 @@
-/* ===== login.css ===== */
-body {
-  margin: 0;
-  font-family: system-ui, "Noto Sans Thai", sans-serif;
-  background: #0f1115;
-  color: #eaeef5;
+/* =========================================
+   Nightlife Neon Theme (สำหรับสถานบันเทิง)
+   ใช้ได้กับหน้า login/register/home/points
+   ========================================= */
+
+:root{
+  /* โทนหลัก */
+  --bg: #0a0c12;
+  --panel: #10131b;
+  --panel-2: #0c0f16;
+  --line: #242a3b;
+
+  /* นีออน */
+  --neon-1: #7c4dff;   /* purple */
+  --neon-2: #02d5ff;   /* cyan   */
+  --neon-3: #ff2e92;   /* pink   */
+  --accent: #3a7afe;   /* blue button */
+
+  /* ตัวอักษร */
+  --text: #e8ecf6;
+  --text-dim: #a7b0c6;
+
+  /* สถานะ */
+  --ok-bg: #0f2c20;   --ok-br: #2b7a46; --ok-tx:#b6ffd1;
+  --er-bg: #2b0f18;   --er-br: #7a2d3b; --er-tx:#ffb3c1;
+
+  /* รัศมี/เงา */
+  --radius: 16px;
+  --shadow-lg: 0 10px 30px rgba(0,0,0,.45);
+  --glass: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
 }
 
-.wrap {
+/* พื้นหลังนีออนแบบ subtle */
+body{
+  margin:0;
+  font-family: system-ui, "Noto Sans Thai", Inter, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(1200px 600px at 100% -10%, rgba(124,77,255,.15), transparent 55%),
+    radial-gradient(900px 500px at -10% 110%, rgba(2,213,255,.12), transparent 50%),
+    var(--bg);
+}
+
+/* ลิงก์นีออน */
+a{
+  color: var(--neon-2);
+  text-decoration: none;
+}
+a:hover{
+  filter: brightness(1.2);
+  text-shadow: 0 0 8px color-mix(in oklab, var(--neon-2) 60%, #000 40%);
+}
+
+/* โครงหน้ากลางจอ */
+.wrap{
   min-height: 100dvh;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: 28px;
 }
 
-.card {
+/* การ์ดแก้ว + เส้นนีออนขอบบาง */
+.card{
   width: 100%;
-  max-width: 420px;
-  background: #171a22;
-  border: 1px solid #252a37;
-  border-radius: 16px;
-  padding: 20px;
+  max-width: 460px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+.card::before{
+  /* glow ไหลเบาๆ */
+  content:"";
+  position:absolute; inset:-1px;
+  border-radius: inherit;
+  background:
+    conic-gradient(from 180deg at 50% 50%,
+      transparent 0 20%, color-mix(in oklab,var(--neon-1) 25%,transparent) 25% 35%,
+      transparent 35% 55%,
+      color-mix(in oklab,var(--neon-2) 25%,transparent) 55% 65%,
+      transparent 65% 100%);
+  mask: linear-gradient(#0000,#000 35%,#000 65%,#0000);
+  filter: blur(18px);
+  pointer-events:none;
 }
 
-.field {
-  margin: 12px 0;
+/* หัวเรื่อง */
+.card h1{
+  margin:0 0 10px;
+  font-weight:800;
+  letter-spacing:.2px;
+  background: linear-gradient(90deg,var(--neon-1),var(--neon-2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color: transparent;
 }
 
-label {
-  display: block;
-  margin-bottom: 6px;
+/* ข้อความรอง */
+.muted{
+  color: var(--text-dim);
+  font-size: 12.5px;
+  margin-top: 8px;
 }
 
-input {
+/* ฟิลด์ฟอร์ม */
+.field{ margin: 14px 0; }
+label{
+  display:block;
+  margin-bottom: 8px;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+input, select, textarea{
   width: 100%;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 13px 12px;
+  border-radius: 12px;
   border: 1px solid #2a3142;
-  background: #0f131a;
-  color: #eaeef5;
+  background: var(--panel-2);
+  color: var(--text);
+  outline: none;
+  transition: border-color .18s, box-shadow .18s, transform .06s;
+}
+input::placeholder{ color: #7f889e; }
+input:focus{
+  border-color: color-mix(in oklab,var(--neon-2) 65%, #2a3142);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--neon-2) 20%, transparent);
+  transform: translateY(-1px);
 }
 
-.btn {
+/* ปุ่ม */
+.btn{
   width: 100%;
-  padding: 12px;
-  border: 0;
-  border-radius: 10px;
+  padding: 12.5px 14px;
+  border: 0; border-radius: 12px;
+  margin-top: 12px;
+  color:#fff; font-weight: 800;
+  letter-spacing:.3px;
+  background: linear-gradient(90deg, var(--neon-1), var(--accent));
+  box-shadow: 0 6px 20px rgba(58,122,254,.35);
+  transition: transform .08s ease, filter .15s ease, box-shadow .2s ease;
+}
+.btn:hover{ filter: brightness(1.08); }
+.btn:active{ transform: translateY(1px) scale(.995); }
+
+/* ปุ่มโปร่งสำหรับลิงก์รอง */
+.btn-ghost{
+  width:100%;
+  padding: 12px 14px;
+  margin-top:10px;
+  background: var(--glass);
+  color: var(--text);
+  border: 1px dashed #2f3750;
+  border-radius: 12px;
+}
+.btn-ghost:hover{
+  border-style: solid;
+  border-color: color-mix(in oklab,var(--neon-1) 45%, #2f3750);
+}
+
+/* กล่องข้อความสถานะ */
+.msg{
+  padding: 11px 12px;
+  border-radius: 12px;
+  margin: 12px 0;
+  border: 1px solid transparent;
+}
+.msg.ok{ background: var(--ok-bg); border-color: var(--ok-br); color: var(--ok-tx); }
+.msg.err{ background: var(--er-bg); border-color: var(--er-br); color: var(--er-tx); }
+
+/* แถบบน (ใช้กับหน้าอื่นๆ ได้) */
+.navbar{
+  width: 100%;
+  display:flex; align-items:center; gap:12px;
+  padding: 12px 16px;
+  background: rgba(10,12,18,.35);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+}
+.brand{
+  font-weight:900; letter-spacing:.5px;
+  background: linear-gradient(90deg,var(--neon-3),var(--neon-2));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+
+/* ตารางเล็ก (เช่น รายการโต๊ะ/บิล) */
+.table-mini{
+  width:100%;
+  border-collapse: collapse;
+  font-size: 14px;
   margin-top: 10px;
-  background: #3a7afe;
-  color: #fff;
-  font-weight: 700;
+}
+.table-mini th, .table-mini td{
+  padding: 10px 12px;
+  border-bottom: 1px solid #1f2536;
+}
+.table-mini tr:hover{ background: #101425; }
+
+/* ยูทิลิตี้เล็กๆ */
+.center{ text-align:center; }
+.grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+.badge{
+  display:inline-flex; align-items:center; gap:6px;
+  padding: 6px 10px; border-radius: 999px;
+  border:1px solid #2c3350; background: #0f1320; color:#bcd2ff;
+  font-size:12px;
 }
 
-.muted {
-  color: #aab3c5;
-  font-size: 12px;
-  margin-top: 10px;
-}
-
-.msg {
-  padding: 10px;
-  border-radius: 10px;
-  margin: 10px 0;
-}
-
-.ok {
-  background: #153a23;
-  color: #b6ffd1;
-  border: 1px solid #2b7a46;
-}
-
-.err {
-  background: #3a1b26;
-  color: #ffb3c1;
-  border: 1px solid #7a2d3b;
-}
-
-a {
-  color: #7fb0ff;
+/* รีสปอนซีฟ */
+@media (max-width: 480px){
+  .card{ padding: 18px; border-radius: 14px; }
+  .grid-2{ grid-template-columns: 1fr; }
 }
