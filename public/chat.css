@@ -1,0 +1,29 @@
+body{margin:0;background:#0f1115;color:#eaeef5;font-family:system-ui,"Noto Sans Thai",sans-serif}
+.wrap{min-height:100dvh;display:grid;place-items:center;padding:24px}
+.card{width:100%;max-width:520px;background:#171a22;border:1px solid #252a37;border-radius:16px;padding:20px}
+h1{margin:0 0 16px}
+.field{display:block;margin:12px 0}
+input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2a3142;background:#0f131a;color:#eaeef5}
+.btn{width:100%;padding:12px;border:0;border-radius:10px;margin-top:10px;background:#5aa2ff;color:#001e35;font-weight:700}
+
+/* Overlay Loading */
+.overlay{
+  position: fixed; inset: 0; 
+  background: rgba(0,0,0,.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+.overlay.hidden{ display: none; }
+.loader{
+  display: inline-flex; align-items: center; gap: 12px;
+  background: #171a22; border: 1px solid #252a37;
+  padding: 14px 18px; border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.35);
+  font-weight: 700; color: #eaeef5;
+}
+.spinner{
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 3px solid #2a3142; border-top-color: #5aa2ff;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

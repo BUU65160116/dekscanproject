@@ -62,9 +62,13 @@ export const submitLogin = async (req: Request, res: Response) => {
       Shop: shopCode,
       Table: String(tableNumber),
     };
+
+    //  ค่า shorthand สำหรับฟีเจอร์แชท/จอใหญ่ (ฝั่ง POST /chat จะอ่านจากนี่)
+    req.session.customerId = rows[0].CustomerID;   // id ผู้ใช้ที่ล็อกอิน
+    const tableId = toIntTable(tableNumber);       // แปลงหมายเลขโต๊ะเป็น number (ไม่ใช่เลขให้เป็น null)
+    req.session.tableId = tableId;                 // เก็บโต๊ะลง session เพื่อให้ /chat ใช้งานได้อัตโนมัติ
   
     // 5) บันทึกลง scanlog (ถ้า TableID เป็นตัวเลขและมีอยู่จริง)
-    const tableId = toIntTable(tableNumber);
     if (tableId !== null) {
       try {
         await pool.query("INSERT INTO scanlog (CustomerID, TableID) VALUES (?, ?)", [rows[0].CustomerID, tableId]);
@@ -129,8 +133,12 @@ export const submitRegister = async (req: Request, res: Response) => {
       Table: String(tableNumber),
     };
 
+    // ✅ ค่า shorthand สำหรับแชท/จอใหญ่
+    req.session.customerId = newRows[0].CustomerID;  // ใช้ใน POST /chat
+    const tableId = toIntTable(tableNumber);         // number หรือ null
+    req.session.tableId = tableId;                   // เก็บโต๊ะไว้ใน session
+
     // 7 บันทึก scanlog
-    const tableId = toIntTable(tableNumber);
     if (tableId !== null) {
       try {
         await pool.query("INSERT INTO scanlog (CustomerID, TableID) VALUES (?, ?)", [newId, tableId]);

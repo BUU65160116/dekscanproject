@@ -25,7 +25,6 @@
       <section class="panel">
         <h2 class="panel-title">แชท</h2>
         <ul id="chatList" class="list">
-          <!-- Placeholder เริ่มต้น -->
           <li class="empty">ยังไม่มีข้อความแชท</li>
         </ul>
       </section>
@@ -34,7 +33,6 @@
       <section class="panel">
         <h2 class="panel-title">วาป</h2>
         <ul id="warpList" class="list">
-          <!-- Placeholder เริ่มต้น -->
           <li class="empty">ยังไม่มีวาป</li>
         </ul>
       </section>
@@ -43,7 +41,6 @@
     <footer class="screen-footer">
       <div class="ticker" id="ticker">
         <div class="ticker-track">
-          <!-- ข้อความวิ่งตัวอย่าง (แก้/ปิดทีหลังได้) -->
           <span>ยินดีต้อนรับสู่ร้านของเรา • โปรดงดใช้คำหยาบและสแปม • ขอบคุณที่ให้ความร่วมมือ</span>
           <span>ยินดีต้อนรับสู่ร้านของเรา • โปรดงดใช้คำหยาบและสแปม • ขอบคุณที่ให้ความร่วมมือ</span>
         </div>
@@ -60,31 +57,51 @@
       elClock.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
     setInterval(tick, 1000); tick();
+  </script>
 
-    // TODO: จุด hook สำหรับรับ message จริง (socket.io / fetch)
-    // ตัวอย่าง mock ชั่วคราว (ลบได้):
-    setTimeout(() => {
-      const chat = document.getElementById("chatList");
-      chat.innerHTML = "";
-      ["สวัสดีครับ", "เปิดเพลงได้ไหม", "ขอโต๊ะเพิ่ม 1 ตัว"].forEach((txt, i) => {
-        const li = document.createElement("li");
-        li.className = "item";
-        li.innerHTML = `<span class="name">Guest#${i+1}</span><span class="msg">${txt}</span>`;
-        chat.appendChild(li);
-      });
+  <!-- Socket.IO -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
 
-      const warp = document.getElementById("warpList");
-      warp.innerHTML = "";
-      [
-        { name: "IG: @barcool", link: "https://instagram.com/barcool" },
-        { name: "FB: Bar Cool", link: "https://facebook.com/barcool" }
-      ].forEach((w) => {
-        const li = document.createElement("li");
-        li.className = "item";
-        li.innerHTML = `<span class="name">${w.name}</span><a class="link" href="${w.link}" target="_blank" rel="noopener">เปิดลิงก์</a>`;
-        warp.appendChild(li);
-      });
-    }, 600);
+    // ฟัง event newMessage ที่ส่งมาจาก server
+    socket.on("newMessage", (data) => {
+      const chatList = document.getElementById("chatList");
+
+      // ลบ placeholder ถ้ามี
+      const empty = chatList.querySelector(".empty");
+      if (empty) empty.remove();
+
+      // เพิ่มข้อความใหม่
+      const li = document.createElement("li");
+      li.className = "item";
+      li.innerHTML = `
+        <span class="name">โต๊ะ ${data.tableId || "-"}</span>
+        <span class="msg">${data.message}</span>
+      `;
+      chatList.appendChild(li);
+    });
+
+    // ✅ โหลดประวัติแชทล่าสุดตอนเปิด
+    async function loadHistory(){
+      try{
+        const res = await fetch("/screen/history");
+        const json = await res.json();
+        if(!json.ok) return;
+        const chatList = document.getElementById("chatList");
+        chatList.innerHTML = ""; // ล้าง placeholder
+        [...json.data].reverse().forEach(it => {
+          const li = document.createElement("li");
+          li.className = "item";
+          li.innerHTML = `
+            <span class="name">โต๊ะ ${it.tableId || "-"}</span>
+            <span class="msg">${it.message}</span>
+          `;
+          chatList.appendChild(li);
+        });
+      }catch(e){ console.error(e); }
+    }
+    loadHistory();
   </script>
 </body>
 </html>

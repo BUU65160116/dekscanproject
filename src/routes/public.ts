@@ -18,6 +18,17 @@ router.get("/home", async (req, res) => {
   // กันกรณียังไม่ล็อกอิน
   if (!req.session?.user) return res.redirect("/login");
 
+  // ✅ รองรับ /home?table=... (เช่นจาก QR)
+  const q = req.query.table;
+  if (typeof q === "string" && q.length > 0) {
+    // เก็บ label ไว้โชว์ (เช่น A1)
+    req.session.user.Table = q;
+    // ถ้าเป็นตัวเลขล้วน เก็บเป็น tableId (number) เผื่อไปใช้กับ FK/DB
+    if (/^\d+$/.test(q)) {
+      req.session.tableId = Number(q);
+    }
+  }
+
   const user = req.session.user;
   const points = await getTotalPoints(user.CustomerID); 
 
@@ -51,12 +62,12 @@ router.get("/warp", requireAuth, (req, res) => {
   res.render("warp", { user, shop: SHOP });
 });
 
-//  โครงหน้า “แชทเรียลไทม์ (ฝั่งลูกค้า)”
-router.get("/chat", requireAuth, (req, res) => {
-  const user = req.session.user;
-  // ไว้ค่อยต่อ socket.io — ตอนนี้แค่ stub
-  res.render("chat", { user });
-});
+// //  โครงหน้า “แชทเรียลไทม์ (ฝั่งลูกค้า)”
+// router.get("/chat", requireAuth, (req, res) => {
+//   const user = req.session.user;
+//   // ไว้ค่อยต่อ socket.io — ตอนนี้แค่ stub
+//   res.render("chat", { user });
+// });
 
 
 // ออกจากระบบ

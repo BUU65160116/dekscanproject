@@ -1,10 +1,71 @@
 <!DOCTYPE html>
 <html lang="th">
-<head><meta charset="utf-8"><title>แชทเรียลไทม์</title></head>
-<body style="font-family:system-ui;padding:16px;">
-  <h2>แชทเรียลไทม์ (ฝั่งลูกค้า)</h2>
-  <p>สวัสดี <strong><%= user.Name %></strong></p>
-  <p>หน้านี้จะเป็นกล่องแชท realtime (เช่น socket.io) — <em>จะทำในสเตปถัดไป</em></p>
-  <p><a href="/home">← กลับหน้า Home</a></p>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/chat.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>ส่งข้อความขึ้นจอ</h1>
+
+    <form id="chatForm" action="/chat" method="POST" class="card">
+      <% if (customerId) { %>
+        <input type="hidden" name="customerId" value="<%= customerId %>" />
+      <% } else { %>
+        <!-- Fallback เท่านั้น ถ้าไม่มี session -->
+        <label class="field">
+          CustomerID (ทดสอบเท่านั้น)
+          <input name="customerId" placeholder="เช่น 21" />
+        </label>
+      <% } %>
+
+      <% if (typeof tableId === 'number') { %>
+        <input type="hidden" name="tableId" value="<%= tableId %>" />
+        <div class="field" style="color:#9fb4ff">โต๊ะของคุณ: <b><%= tableId %></b></div>
+      <% } else { %>
+        <!-- Fallback เท่านั้น ถ้าไม่มี session -->
+        <label class="field">
+          โต๊ะ (TableID)
+          <input name="tableId" placeholder="A1 / 5 ..." />
+        </label>
+      <% } %>
+
+      <label class="field">
+        ข้อความ
+        <textarea name="message" rows="4" required placeholder="พิมพ์ข้อความ..."></textarea>
+      </label>
+
+      <button id="sendBtn" type="submit" class="btn">ส่งข้อความ</button>
+      <p><a href="/home">← กลับหน้า Home</a></p>
+    </form>
+  </div>
+
+  <!-- overlay เดิมของคุณ -->
+  <div id="overlay" class="overlay hidden">
+    <div class="loader">
+      <span class="spinner"></span>
+      <span class="status" id="overlayText">กำลังส่ง...</span>
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const form   = document.getElementById("chatForm");
+    const btn    = document.getElementById("sendBtn");
+    const ov     = document.getElementById("overlay");
+    const ovText = document.getElementById("overlayText");
+    if (!form || !btn || !ov) return;
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      ov.classList.remove("hidden");
+      ovText.textContent = "กำลังส่ง...";
+      setTimeout(() => form.submit(), 900);
+    });
+  });
+  </script>
 </body>
 </html>
