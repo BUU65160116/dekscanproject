@@ -213,3 +213,20 @@ input:focus{
   .card{ padding: 18px; border-radius: 14px; }
   .grid-2{ grid-template-columns: 1fr; }
 }
+/* ปิดหน้าขาวจาก Autofill (Chrome/Edge) ให้กลืนกับธีม */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  box-shadow: 0 0 0px 1000px var(--panel-2) inset !important; /* เติมพื้นให้เป็นสี input เดิม */
+  transition: background-color 99999s ease-in-out 0s; /* ตัดแอนิเมชันพื้นขาวของเบราว์เซอร์ */
+}
+
+/* สีเลือกข้อความตอน drag ให้เข้ากับธีม (กันดูเป็นขาวจ้า) */
+::selection {
+  background: color-mix(in oklab, var(--neon-2) 35%, #000);
+  color: #fff;
+}
+
+/* ลดแสงไฮไลต์บนมือถือ */
+* { -webkit-tap-highlight-color: transparent; }
