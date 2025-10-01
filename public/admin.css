@@ -1,0 +1,17 @@
+
+/* =================================================================
+   cssของ admin/dashboard/chat
+   ================================================================= */
+   
+.wrap{max-width:1100px;margin:0 auto;padding:16px;color:#eaf1ff;font-family:system-ui,"Noto Sans Thai",sans-serif;background:#0f1115}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card{background:#171a22;border:1px solid #252a37;border-radius:14px;padding:12px}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.actions{display:flex;gap:8px}
+button,.soft{padding:8px 12px;border-radius:10px;border:1px solid #2a3142;background:#0f131a;color:#eaf1ff;cursor:pointer}
+button.danger{background:#ff4d6d;border-color:#ff4d6d;color:#001}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{border-top:1px solid #2a3142;padding:10px;vertical-align:top}
+.muted{color:#98a2b3;text-align:center}
+
+

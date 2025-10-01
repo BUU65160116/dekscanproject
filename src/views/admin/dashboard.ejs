@@ -1,31 +1,143 @@
-<!-- src/views/admin/dashboard.ejs -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="utf-8" />
-  <title>Admin Dashboard</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>
-    body { font-family: system-ui, sans-serif; background:#fafafa; padding:24px; }
-    .wrap { max-width:960px; margin:0 auto; }
-    .top { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-    .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/admin.css" />
 </head>
 <body>
+  <header>
+    <h1>📊 หลังบ้าน | My Bar</h1>
+  </header>
+
   <div class="wrap">
-    <div class="top">
-      <h1>Admin Dashboard</h1>
+    <header class="header">
+      <h1>Dashboard</h1>
+      <div class="actions">
+        <a class="soft" href="/screen" target="_blank" rel="noopener">เปิดจอใหญ่</a>
+        <form action="/admin/logout" method="POST" style="display:inline">
+          <button type="submit" class="soft">ออกจากระบบ</button>
+        </form>
+      </div>
+    </header>
 
-      <!-- ปุ่ม logout ส่งแบบ POST ตามสเปกที่ตั้งไว้ -->
-      <form action="/admin/logout" method="POST">
-        <button type="submit">Logout</button>
-      </form>
-    </div>
+    <!-- ===== จัดการแชทเรียลไทม์ ===== -->
+    <section class="card">
+      <div class="card-head">
+        <h2>แชทเรียลไทม์ (ลูกค้าส่งขึ้นจอได้ทันที)</h2>
+        <div class="actions">
+          <button id="btnRefresh">รีเฟรช</button>
+          <button id="btnClear" class="danger">ล้างจอทั้งหมด</button>
+        </div>
+      </div>
 
-    <div class="card">
-      <p>Placeholder — เนื้อหาแดชบอร์ดผู้ดูแลระบบจะมาอยู่ตรงนี้</p>
-    </div>
+      <table class="table" id="chatTable">
+        <thead>
+          <tr>
+            <th style="width:90px">ID</th>
+            <th style="width:200px">เวลา</th>
+            <th style="width:90px">โต๊ะ</th>
+            <th>ข้อความ</th>
+            <th style="width:120px">จัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="chatBody">
+          <tr><td colspan="5" class="muted">กำลังโหลด...</td></tr>
+        </tbody>
+      </table>
+    </section>
   </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const tbody = document.getElementById("chatBody");
+    const btnRefresh = document.getElementById("btnRefresh");
+    const btnClear = document.getElementById("btnClear");
+    const ioClient = io();
+
+    const esc = (s) => (s||"").toString().replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const fmtTime = (s)=>{ try{ return new Date(s).toLocaleString(); }catch{ return s; } };
+
+    function rowHtml(it){
+      return `
+        <tr id="row-${it.chatId}" data-id="${it.chatId}">
+          <td>${it.chatId}</td>
+          <td>${fmtTime(it.createdAt)}</td>
+          <td>${it.tableId ?? "-"}</td>
+          <td class="msg">${esc(it.message)}</td>
+          <td>
+            <button class="soft danger" data-del="${it.chatId}">ลบ</button>
+          </td>
+        </tr>`;
+    }
+
+    async function loadData(){
+      tbody.innerHTML = `<tr><td colspan="5" class="muted">กำลังโหลด...</td></tr>`;
+      const res = await fetch("/admin/chat/data");
+      const json = await res.json();
+      if(!json.ok){ tbody.innerHTML = `<tr><td colspan="5" class="muted">โหลดไม่สำเร็จ</td></tr>`; return; }
+      if(json.data.length === 0){ tbody.innerHTML = `<tr><td colspan="5" class="muted">ยังไม่มีข้อความ</td></tr>`; return; }
+      tbody.innerHTML = json.data.map(rowHtml).join("");
+    }
+
+    // ลบเดี่ยว
+    tbody.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-del]");
+      if(!btn) return;
+      const id = btn.getAttribute("data-del");
+      if(!confirm(`ลบข้อความ #${id}?`)) return;
+      const res = await fetch(`/admin/chat/${id}/delete`, { method: "POST" });
+      const json = await res.json();
+      if(json.ok){
+        const tr = document.getElementById(`row-${id}`);
+        if(tr) tr.remove();
+        if (!tbody.querySelector("tr")) {
+          tbody.innerHTML = `<tr><td colspan="5" class="muted">ยังไม่มีข้อความ</td></tr>`;
+        }
+      }
+    });
+
+    // ล้างทั้งหมด
+    btnClear.addEventListener("click", async () => {
+      if(!confirm("ล้างข้อความบนจอทั้งหมด?")) return;
+      const res = await fetch("/admin/chat/clear", { method: "POST" });
+      const json = await res.json();
+      if(json.ok){
+        tbody.innerHTML = `<tr><td colspan="5" class="muted">เคลียร์แล้ว</td></tr>`;
+      }
+    });
+
+    btnRefresh.addEventListener("click", loadData);
+
+    // realtime: ข้อความใหม่
+    ioClient.on("newMessage", (data) => {
+      if(typeof data.chatId === "undefined") return;
+      if (document.getElementById(`row-${data.chatId}`)) return;
+      const row = {
+        chatId: data.chatId,
+        createdAt: data.createdAt || new Date().toISOString(),
+        tableId: data.tableId ?? null,
+        message: data.message || ""
+      };
+      tbody.insertAdjacentHTML("afterbegin", rowHtml(row));
+    });
+
+    // realtime: ลบเดี่ยว
+    ioClient.on("deleteMessage", ({ chatId }) => {
+      const tr = document.getElementById(`row-${chatId}`);
+      if(tr) tr.remove();
+      if (!tbody.querySelector("tr")) {
+        tbody.innerHTML = `<tr><td colspan="5" class="muted">ยังไม่มีข้อความ</td></tr>`;
+      }
+    });
+
+    // realtime: ล้างทั้งหมด
+    ioClient.on("clearChat", () => {
+      tbody.innerHTML = `<tr><td colspan="5" class="muted">เคลียร์แล้ว</td></tr>`;
+    });
+
+    loadData();
+  </script>
 </body>
 </html>

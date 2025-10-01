@@ -81,7 +81,7 @@ export const submitLogin = async (req: Request, res: Response) => {
     }
 
     
-    // ✅ แต้ม: สร้าง row ถ้ายังไม่มี + ให้แต้มครั้งแรกของวัน (ร้านเดียว)
+    //  แต้ม: สร้าง row ถ้ายังไม่มี + ให้แต้มครั้งแรกของวัน (ร้านเดียว)
     await ensurePointsRow(rows[0].CustomerID);
     await awardCheckinIfFirstToday(rows[0].CustomerID, tableId);
 
@@ -133,7 +133,7 @@ export const submitRegister = async (req: Request, res: Response) => {
       Table: String(tableNumber),
     };
 
-    // ✅ ค่า shorthand สำหรับแชท/จอใหญ่
+    //  ค่า shorthand สำหรับแชท/จอใหญ่
     req.session.customerId = newRows[0].CustomerID;  // ใช้ใน POST /chat
     const tableId = toIntTable(tableNumber);         // number หรือ null
     req.session.tableId = tableId;                   // เก็บโต๊ะไว้ใน session
