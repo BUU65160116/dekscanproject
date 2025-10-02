@@ -1,10 +1,10 @@
-// src/types/session.d.ts
+// src/types/express-session.d.ts
 import "express-session";
 import type { Server as SocketIOServer } from "socket.io";
 
+/** ขยายข้อมูลใน session */
 declare module "express-session" {
   interface SessionData {
-    // โปรไฟล์ผู้ใช้ที่คุณมีอยู่เดิม
     user?: {
       CustomerID: number;
       Name: string;
@@ -12,22 +12,23 @@ declare module "express-session" {
       Shop: string;
       Table: string;
     };
-
-    // สิทธิ์แอดมิน
+    /** สิทธิ์แอดมิน */
     isAdmin?: boolean;
 
-    // สำหรับ flow แชท/จอใหญ่
+    /** ค่าช่วยฝั่งลูกค้า/จอใหญ่ */
     customerId?: number;
     tableId?: number | null;
   }
 }
 
+/** ขยาย Request ให้มี req.io ใช้งานได้ทุกที่ */
 declare global {
   namespace Express {
     interface Request {
-      io?: SocketIOServer; // ให้ req.io พิมพ์ชัดเจน
+      io?: SocketIOServer;
     }
   }
 }
 
+/** ทำไฟล์นี้ให้เป็นโมดูล (จำเป็นสำหรับ declare global) */
 export {};

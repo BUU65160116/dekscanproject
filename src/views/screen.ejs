@@ -64,44 +64,74 @@
   <script>
     const socket = io();
 
-    // ฟัง event newMessage ที่ส่งมาจาก server
-    socket.on("newMessage", (data) => {
-      const chatList = document.getElementById("chatList");
+    // helper: escape ข้อความกัน XSS
+    const esc = (s) => (s || "").toString().replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
-      // ลบ placeholder ถ้ามี
-      const empty = chatList.querySelector(".empty");
-      if (empty) empty.remove();
-
-      // เพิ่มข้อความใหม่
-      const li = document.createElement("li");
-      li.className = "item";
-      li.innerHTML = `
-        <span class="name">โต๊ะ ${data.tableId || "-"}</span>
-        <span class="msg">${data.message}</span>
-      `;
-      chatList.appendChild(li);
-    });
-
-    // ✅ โหลดประวัติแชทล่าสุดตอนเปิด
+    //  โหลดประวัติแชทล่าสุดตอนเปิด (ต้องให้ /screen/history ส่ง chatId มาด้วย)
     async function loadHistory(){
       try{
         const res = await fetch("/screen/history");
         const json = await res.json();
         if(!json.ok) return;
+
         const chatList = document.getElementById("chatList");
         chatList.innerHTML = ""; // ล้าง placeholder
+
+        // ใส่จากเก่าไปใหม่ (reverse)
         [...json.data].reverse().forEach(it => {
           const li = document.createElement("li");
           li.className = "item";
+          li.dataset.id = it.chatId;      //  เก็บ chatId ใน DOM
+          li.id = `chat-${it.chatId}`;    //  ตั้ง id หาเจอง่ายตอนลบ
           li.innerHTML = `
             <span class="name">โต๊ะ ${it.tableId || "-"}</span>
-            <span class="msg">${it.message}</span>
+            <span class="msg">${esc(it.message)}</span>
           `;
           chatList.appendChild(li);
         });
+
+        if(!chatList.children.length){
+          chatList.innerHTML = `<li class="empty">ยังไม่มีข้อความแชท</li>`;
+        }
       }catch(e){ console.error(e); }
     }
     loadHistory();
+
+    //  รับข้อความใหม่แบบเรียลไทม์
+    socket.on("newMessage", (data) => {
+      const chatList = document.getElementById("chatList");
+      const empty = chatList.querySelector(".empty");
+      if (empty) empty.remove();
+
+      const li = document.createElement("li");
+      li.className = "item";
+      if (typeof data.chatId !== "undefined") {
+        li.dataset.id = data.chatId;
+        li.id = `chat-${data.chatId}`;
+      }
+      li.innerHTML = `
+        <span class="name">โต๊ะ ${data.tableId || "-"}</span>
+        <span class="msg">${esc(data.message)}</span>
+      `;
+      chatList.appendChild(li);
+    });
+
+    //  ลบแถวเดี่ยวแบบเรียลไทม์ (แอดมินกดลบ)
+    socket.on("deleteMessage", ({ chatId }) => {
+      const el = document.getElementById(`chat-${chatId}`);
+      if (el) el.remove();
+
+      const chatList = document.getElementById("chatList");
+      if (!chatList.querySelector(".item")) {
+        chatList.innerHTML = `<li class="empty">ยังไม่มีข้อความแชท</li>`;
+      }
+    });
+
+    //  ล้างทุกข้อความแบบเรียลไทม์ (แอดมินกด clear)
+    socket.on("clearChat", () => {
+      const chatList = document.getElementById("chatList");
+      chatList.innerHTML = `<li class="empty">ยังไม่มีข้อความแชท</li>`;
+    });
   </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
-// src/routes/chat.ts
 import { Router } from "express";
 import { pool } from "../services/db";
-import { requireAuth } from "../middlewares/auth"; // ✅ ใช้ตัวเดิมของโปรเจกต์
+import { requireAuth } from "../middlewares/auth"; // 
+import { ResultSetHeader } from "mysql2"; 
 
 const chatRouter = Router();
 
@@ -30,12 +30,21 @@ chatRouter.post("/", requireAuth, async (req: any, res) => {
         ? req.session.tableId
         : (isNaN(Number(req.body?.tableId)) ? null : Number(req.body?.tableId));
 
-    await pool.query(
+    //  INSERT + เอา insertId เพื่อนำไป emit
+    const [ins] = await pool.query<ResultSetHeader>(
       "INSERT INTO chat_message (CustomerID, TableID, Message) VALUES (?, ?, ?)",
       [customerId, tableId, message]
     );
+    const chatId = ins.insertId;
 
-    req.io.emit("newMessage", { tableId, message, createdAt: new Date() });
+    //  broadcast ไปจอใหญ่/หน้าแอดมิน พร้อม chatId
+    req.io.emit("newMessage", {
+      chatId,
+      tableId,
+      message,
+      createdAt: new Date().toISOString(),
+    });
+
     return res.redirect("/chat");
   } catch (e) {
     console.error(e);
