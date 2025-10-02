@@ -1,6 +1,4 @@
-// src/services/odoo.ts
-// Service ส่วนกลางสำหรับเรียก Odoo JSON-RPC
-// --------------------------------------------------
+// Service กลางสำหรับเรียก Odoo JSON-RPC (Node 18+ ใช้ fetch ได้เลย)
 
 import assert from "node:assert";
 
@@ -91,3 +89,131 @@ export function buildCompanyContext(companyId: number) {
 }
 
 // TODO(สเตป 3.2): จะเพิ่มฟังก์ชัน fetchOrders() / fetchUnpaid() ที่นี่
+
+// ===== [STEP 3.2.1] ดึงรายการโต๊ะค้างจาก Odoo =====
+
+// รูปแบบข้อมูลที่ฝั่งแดชบอร์ดอยากได้ (สรุปแล้วอ่านง่าย)
+export type UnpaidOrder = {
+  orderId: number;
+  tableLabel: string;         // ตัวอย่าง: "mybar, 7"
+  tableNo: number | null;     // 7 (ตัดเลขออกมา ถ้าไม่ได้ให้เป็น null)
+  amountTotal: number;        // ยอดรวม
+  amountPaid: number;         // ยอดที่จ่ายแล้ว
+  amountDue: number;          // ค้างชำระ = Total - Paid
+  state: string;              // ปกติจะเป็น "draft"
+  dateOrderUtc: string;       // เวลาจาก Odoo (UTC string เดิม) — ไปแปลงเป็นเวลาไทยตอนแสดงผล
+};
+
+/**
+ * ดึง "ออเดอร์ล่าสุด" จาก pos.order แล้วกรองให้เหลือ
+ *   - มี table_id
+ *   - state ไม่ใช่ "paid"/"done"
+ * คืนข้อมูลแบบ UnpaidOrder[] สำหรับใช้บนแดชบอร์ด
+ *
+ * หมายเหตุ:
+ * - Odoo ส่ง date_order เป็น UTC string (เช่น "2025-10-02 02:09:21"),
+ *   ฝั่ง UI ค่อยแปลงเป็น Asia/Bangkok ตอนแสดงผล
+ */
+export async function fetchUnpaidOrders(limit = 300): Promise<UnpaidOrder[]> {
+  // 1) login → uid
+  const uid = await odooLogin();
+
+  // 2) company_id → เอาไว้ประกอบ context ป้องกัน record rule ของ multi-company
+  const companyId = await getCompanyId(uid);
+  const ctx = buildCompanyContext(companyId);
+
+  // 3) ดึงออเดอร์ล่าสุดจาก pos.order
+  //    - ดึงกว้าง ๆ แล้วไปกรองฝั่งเรา (ปลอดภัยกับบางเวอร์ชันที่ไม่ชอบ domain ซับซ้อน)
+  const rows = await rpc<any[]>("object", "execute_kw", [
+    ODOO_DB,
+    uid,
+    ODOO_API_KEY,
+    "pos.order",
+    "search_read",
+    [[]], // domain ว่างไว้ แล้วใช้ order/limit แทน
+    {
+      fields: ["id", "name", "state", "table_id", "amount_total", "amount_paid", "date_order"],
+      order: "id desc",
+      limit,
+      context: ctx,
+    },
+  ]);
+
+  // 4) กรอง: ต้องมี table_id และ state ไม่ใช่ paid/done
+  const filtered = rows.filter((r) => {
+    const hasTable = Array.isArray(r.table_id) && r.table_id.length >= 2; // [id, display_name]
+    const notPaid = r.state !== "paid" && r.state !== "done";
+    return hasTable && notPaid;
+  });
+
+  // 5) map ให้อยู่ในรูปแบบที่แดชบอร์ดใช้สะดวก
+  const result: UnpaidOrder[] = filtered.map((r) => {
+    const tableLabel: string = r.table_id?.[1] ?? ""; // display name เช่น "mybar, 7"
+    const tableNo = parseTableNo(tableLabel);
+    const amountTotal = Number(r.amount_total ?? 0);
+    const amountPaid = Number(r.amount_paid ?? 0);
+    return {
+      orderId: r.id,
+      tableLabel,
+      tableNo,
+      amountTotal,
+      amountPaid,
+      amountDue: +(amountTotal - amountPaid).toFixed(2),
+      state: r.state,
+      dateOrderUtc: r.date_order, // เก็บค่าเดิมเป็น UTC string
+    };
+  });
+
+  return result;
+}
+
+// ตัวช่วย: ตัดเลขโต๊ะจาก display_name เช่น "mybar, 7" → 7
+function parseTableNo(label: string): number | null {
+  // พยายามจับเลขท้ายสุดในสตริง
+  const m = label.match(/(\d+)\s*$/);
+  return m ? Number(m[1]) : null;
+}
+
+// ดึงข้อมูล order เดี่ยว เพื่อดูว่าเป็นโต๊ะอะไร =====
+
+export type OrderInfo = {
+  orderId: number;
+  tableLabel: string;
+  tableNo: number | null;
+  amountTotal: number;
+  amountPaid: number;
+  dateOrderUtc: string | null;
+  state: string;
+};
+
+// ดึง order ตาม id (ใช้ตอนจะแสดงข้อมูลติดต่อให้โต๊ะนั้น)
+export async function fetchOrderInfo(orderId: number): Promise<OrderInfo | null> {
+  const uid = await odooLogin();
+  const companyId = await getCompanyId(uid);
+  const ctx = buildCompanyContext(companyId);
+
+  const rows = await rpc<any[]>("object", "execute_kw", [
+    ODOO_DB, uid, ODOO_API_KEY,
+    "pos.order", "search_read",
+    [[["id", "=", orderId]]],
+    { fields: ["id","state","table_id","amount_total","amount_paid","date_order"], limit: 1, context: ctx }
+  ]);
+
+  if (!rows || !rows.length) return null;
+
+  const r = rows[0];
+  const tableLabel: string = r.table_id?.[1] ?? "";
+  const tableNo = parseTableNo(tableLabel);
+  const toNum = (v:any) => Number.parseFloat(String(v)) || 0;
+
+  return {
+    orderId: r.id,
+    tableLabel,
+    tableNo,
+    amountTotal: toNum(r.amount_total),
+    amountPaid:  toNum(r.amount_paid),
+    dateOrderUtc: (r.date_order ?? null) as string | null,
+    state: r.state,
+  };
+}
+

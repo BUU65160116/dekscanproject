@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="/admin.css" />
 </head>
 <body>
+  <!-- =========================================================
+       Header + actions
+       ========================================================= -->
   <header>
     <h1>📊 หลังบ้าน | My Bar</h1>
   </header>
@@ -22,7 +25,54 @@
       </div>
     </header>
 
-    <!-- ===== จัดการแชทเรียลไทม์ ===== -->
+    <!-- =========================================================
+         ค้างชำระ (ดึงจาก Odoo)
+         ========================================================= -->
+    <section class="card">
+      <div class="card-head">
+        <h2>รายการค้างชำระ</h2>
+        <div class="actions">
+          <button id="unpaidRefresh">รีเฟรช</button>
+        </div>
+      </div>
+
+      <!-- วางการ์ดต่อโต๊ะ -->
+      <div id="unpaidGrid" class="grid-2 gap-16">
+        <div class="muted">กำลังโหลด...</div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         Modal: ใส่ PIN แอดมิน (แทน window.prompt)
+         ========================================================= -->
+    <dialog id="pinDialog">
+      <form id="pinForm" method="dialog" class="card" style="min-width:280px">
+        <h3>ใส่ PIN แอดมิน</h3>
+
+        <!-- ปล่อยให้เป็น a-z A-Z 0-9 ความยาว 4–32 -->
+        <input
+          id="pinInput"
+          type="password"
+          required
+          minlength="4"
+          maxlength="32"
+          pattern="[A-Za-z0-9]{4,32}"
+          autocomplete="off"
+          placeholder="กรอก PIN"
+        />
+
+        <menu style="display:flex;gap:.5rem;justify-content:flex-end">
+          <!-- ทำให้กด Enter = “ตกลง” -->
+          <button id="pinOk" value="ok" class="danger" type="submit" autofocus>ตกลง</button>
+          <!-- ยกเลิกไม่ติด required/pattern -->
+          <button value="cancel" class="soft" type="submit" formnovalidate>ยกเลิก</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <!-- =========================================================
+         จัดการแชทเรียลไทม์
+         ========================================================= -->
     <section class="card">
       <div class="card-head">
         <h2>แชทเรียลไทม์ (ลูกค้าส่งขึ้นจอได้ทันที)</h2>
@@ -49,95 +99,214 @@
     </section>
   </div>
 
+  <!-- =========================================================
+       Scripts
+       ========================================================= -->
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const tbody = document.getElementById("chatBody");
-    const btnRefresh = document.getElementById("btnRefresh");
-    const btnClear = document.getElementById("btnClear");
-    const ioClient = io();
+    // ---------- Helpers ----------
+    const esc     = (s) => (s || '').toString().replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const fmtTime = (s) => { try { return new Date(s).toLocaleString(); } catch { return s; } };
+    const fmtTHB  = (n) => {
+      try { return new Intl.NumberFormat('th-TH', { style:'currency', currency:'THB' }).format(n || 0); }
+      catch { return (n || 0).toFixed(2) + '฿'; }
+    };
 
-    const esc = (s) => (s||"").toString().replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    const fmtTime = (s)=>{ try{ return new Date(s).toLocaleString(); }catch{ return s; } };
+    // =========================================================
+    // 1) แชทเรียลไทม์
+    // =========================================================
+    const ioClient  = io();
+    const tbody     = document.getElementById('chatBody');
+    const btnRefresh= document.getElementById('btnRefresh');
+    const btnClear  = document.getElementById('btnClear');
 
-    function rowHtml(it){
+    function rowHtml(it) {
       return `
         <tr id="row-${it.chatId}" data-id="${it.chatId}">
           <td>${it.chatId}</td>
           <td>${fmtTime(it.createdAt)}</td>
-          <td>${it.tableId ?? "-"}</td>
+          <td>${it.tableId ?? '-'}</td>
           <td class="msg">${esc(it.message)}</td>
-          <td>
-            <button class="soft danger" data-del="${it.chatId}">ลบ</button>
-          </td>
+          <td><button class="soft danger" data-del="${it.chatId}">ลบ</button></td>
         </tr>`;
     }
 
-    async function loadData(){
+    async function loadData() {
       tbody.innerHTML = `<tr><td colspan="5" class="muted">กำลังโหลด...</td></tr>`;
-      const res = await fetch("/admin/chat/data");
+      const res = await fetch('/admin/chat/data');
       const json = await res.json();
-      if(!json.ok){ tbody.innerHTML = `<tr><td colspan="5" class="muted">โหลดไม่สำเร็จ</td></tr>`; return; }
-      if(json.data.length === 0){ tbody.innerHTML = `<tr><td colspan="5" class="muted">ยังไม่มีข้อความ</td></tr>`; return; }
-      tbody.innerHTML = json.data.map(rowHtml).join("");
+      if (!json.ok) {
+        tbody.innerHTML = `<tr><td colspan="5" class="muted">โหลดไม่สำเร็จ</td></tr>`;
+        return;
+      }
+      if (!json.data.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="muted">ยังไม่มีข้อความ</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = json.data.map(rowHtml).join('');
     }
 
     // ลบเดี่ยว
-    tbody.addEventListener("click", async (e) => {
-      const btn = e.target.closest("[data-del]");
-      if(!btn) return;
-      const id = btn.getAttribute("data-del");
-      if(!confirm(`ลบข้อความ #${id}?`)) return;
-      const res = await fetch(`/admin/chat/${id}/delete`, { method: "POST" });
+    tbody.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-del]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-del');
+      if (!confirm(`ลบข้อความ #${id}?`)) return;
+
+      const res = await fetch(`/admin/chat/${id}/delete`, { method: 'POST' });
       const json = await res.json();
-      if(json.ok){
-        const tr = document.getElementById(`row-${id}`);
-        if(tr) tr.remove();
-        if (!tbody.querySelector("tr")) {
+      if (json.ok) {
+        document.getElementById(`row-${id}`)?.remove();
+        if (!tbody.querySelector('tr')) {
           tbody.innerHTML = `<tr><td colspan="5" class="muted">ยังไม่มีข้อความ</td></tr>`;
         }
       }
     });
 
     // ล้างทั้งหมด
-    btnClear.addEventListener("click", async () => {
-      if(!confirm("ล้างข้อความบนจอทั้งหมด?")) return;
-      const res = await fetch("/admin/chat/clear", { method: "POST" });
+    btnClear.addEventListener('click', async () => {
+      if (!confirm('ล้างข้อความบนจอทั้งหมด?')) return;
+      const res = await fetch('/admin/chat/clear', { method: 'POST' });
       const json = await res.json();
-      if(json.ok){
+      if (json.ok) {
         tbody.innerHTML = `<tr><td colspan="5" class="muted">เคลียร์แล้ว</td></tr>`;
       }
     });
 
-    btnRefresh.addEventListener("click", loadData);
+    btnRefresh.addEventListener('click', loadData);
 
-    // realtime: ข้อความใหม่
-    ioClient.on("newMessage", (data) => {
-      if(typeof data.chatId === "undefined") return;
+    // realtime events
+    ioClient.on('newMessage', (data) => {
+      if (typeof data.chatId === 'undefined') return;
       if (document.getElementById(`row-${data.chatId}`)) return;
       const row = {
         chatId: data.chatId,
         createdAt: data.createdAt || new Date().toISOString(),
         tableId: data.tableId ?? null,
-        message: data.message || ""
+        message: data.message || ''
       };
-      tbody.insertAdjacentHTML("afterbegin", rowHtml(row));
+      tbody.insertAdjacentHTML('afterbegin', rowHtml(row));
     });
 
-    // realtime: ลบเดี่ยว
-    ioClient.on("deleteMessage", ({ chatId }) => {
-      const tr = document.getElementById(`row-${chatId}`);
-      if(tr) tr.remove();
-      if (!tbody.querySelector("tr")) {
+    ioClient.on('deleteMessage', ({ chatId }) => {
+      document.getElementById(`row-${chatId}`)?.remove();
+      if (!tbody.querySelector('tr')) {
         tbody.innerHTML = `<tr><td colspan="5" class="muted">ยังไม่มีข้อความ</td></tr>`;
       }
     });
 
-    // realtime: ล้างทั้งหมด
-    ioClient.on("clearChat", () => {
+    ioClient.on('clearChat', () => {
       tbody.innerHTML = `<tr><td colspan="5" class="muted">เคลียร์แล้ว</td></tr>`;
     });
 
+    // โหลดครั้งแรก
     loadData();
+
+    // =========================================================
+    // 2) ค้างชำระ + เปิดหน้า “ข้อมูลติดต่อ” (ตรวจ PIN ที่เซิร์ฟเวอร์)
+    // =========================================================
+    const unpaidGrid        = document.getElementById('unpaidGrid');
+    const unpaidRefreshBtn  = document.getElementById('unpaidRefresh');
+
+    function unpaidCardHtml(row) {
+      const table = row.tableNo ?? '-';
+      return `
+        <div class="card soft" data-order-id="${row.orderId}">
+          <div class="card-head"><strong>รายการค้างชำระ</strong></div>
+          <table class="table compact">
+            <thead><tr><th>โต๊ะ</th><th>ยอด</th><th>สถานะ</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>${table}</td>
+                <td>${fmtTHB(row.amountDue)}</td>
+                <td>unpaid</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="actions">
+            <button class="soft btnContact" data-order-id="${row.orderId}" data-table="${table}">
+              ข้อมูลติดต่อ
+            </button>
+          </div>
+        </div>`;
+    }
+
+    async function loadUnpaid() {
+      unpaidGrid.innerHTML = `<div class="muted">กำลังโหลด...</div>`;
+      try {
+        const r = await fetch('/admin/unpaid/data');
+        const j = await r.json();
+
+        if (!j.ok) throw new Error(j.error || 'โหลดไม่สำเร็จ');
+        if (!j.data || !j.data.length) {
+          unpaidGrid.innerHTML = `<div class="muted">ไม่มีค้างชำระ</div>`;
+          return;
+        }
+        unpaidGrid.innerHTML = j.data.map(unpaidCardHtml).join('');
+      } catch (err) {
+        unpaidGrid.innerHTML = `<div class="muted">ผิดพลาด: ${err.message || err}</div>`;
+      }
+    }
+
+    // ให้รีเฟรชเฉพาะตอนกดปุ่ม
+    unpaidRefreshBtn?.addEventListener('click', loadUnpaid);
+
+    // โหลดครั้งแรก (ถ้าไม่ต้องการให้โหลดอัตโนมัติ สามารถคอมเมนต์บรรทัดนี้ออก)
+    loadUnpaid();
+
+    // ------ Modal PIN + เปิดหน้าข้อมูลติดต่อ ------
+    const pinDialog = document.getElementById('pinDialog');
+    const pinForm   = document.getElementById('pinForm');
+    const pinInput  = document.getElementById('pinInput');
+
+    // orderId ปัจจุบันที่กำลังจะดูข้อมูลติดต่อ
+    let currentOrderId = null;
+
+    // คลิกปุ่ม “ข้อมูลติดต่อ” -> เปิด modal
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btnContact');
+      if (!btn) return;
+
+      currentOrderId = btn.dataset.orderId;
+      pinInput.value = '';
+      pinDialog.showModal();
+      pinInput.focus();
+    });
+
+    // ส่งฟอร์ม dialog (กด Enter หรือคลิกปุ่ม)
+    pinForm.addEventListener('submit', (e) => {
+      e.preventDefault(); // กันปิดเอง เพื่อควบคุม flow
+      const action = e.submitter?.value; // "ok" หรือ "cancel"
+
+      if (action === 'cancel') {
+        pinDialog.close();
+        return;
+      }
+
+      // action === "ok"
+      if (!pinForm.reportValidity()) return; // required/pattern
+
+      const pin = pinInput.value.trim();
+      if (!currentOrderId) { pinDialog.close(); return; }
+
+      openContact(currentOrderId, pin); // เปิดแท็บใหม่แบบ POST
+      pinDialog.close();
+    });
+
+    // เปิดหน้าข้อมูลติดต่อด้วย POST (user gesture -> ไม่โดน block)
+    function openContact(orderId, pin) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/admin/unpaid/contact/view';
+      form.target = '_blank';
+      form.innerHTML = `
+        <input type="hidden" name="orderId" value="${orderId}" />
+        <input type="hidden" name="pin"     value="${pin}" />
+      `;
+      document.body.appendChild(form);
+      form.submit();
+      form.remove();
+    }
   </script>
 </body>
 </html>

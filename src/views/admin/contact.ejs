@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/admin.css" />
+</head>
+<body>
+  <header>
+    <h1>📇 ข้อมูลติดต่อ</h1>
+  </header>
+
+  <div class="wrap">
+    <!-- การ์ดรายละเอียดออเดอร์ของโต๊ะที่เลือก -->
+    <section class="card">
+      <div class="card-head">
+        <h2>โต๊ะ <%= order.tableNo ?? "-" %> | สถานะ: <%= order.state %></h2>
+        <div class="actions">
+          <a class="soft" href="/admin/dashboard">กลับ Dashboard</a>
+        </div>
+      </div>
+
+      <!-- ตารางข้อมูลติดต่อ (ชื่อ/เบอร์) -->
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ลูกค้า</th>
+            <th>เบอร์</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (contact) { %>
+            <tr>
+              <td><%= contact.name %></td>
+              <td><%= contact.phone %></td>
+            </tr>
+          <% } else { %>
+            <tr>
+              <td colspan="2" class="muted">ไม่พบข้อมูลติดต่อล่าสุดของโต๊ะนี้</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+
+      <!-- สรุปยอดค้าง + เวลา -->
+      <div class="muted" style="margin-top:8px">
+        ยอดค้าง:
+        <strong><%= (order.amountTotal - order.amountPaid).toFixed(2) %>฿</strong>
+        |
+        เปิดออเดอร์ (UTC): <%= order.dateOrderUtc || "-" %>
+      </div>
+
+      <!-- TODO(สเตปถัดไป): ปุ่ม "มาร์กจ่ายแล้ว" -->
+    </section>
+  </div>
+</body>
+</html>

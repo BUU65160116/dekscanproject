@@ -9,6 +9,7 @@ import adminRouter from "./routes/admin";    // เส้นทางฝั่�
 import screenRouter from "./routes/screen";  // จอใหญ่ (Big Screen)
 import chatRouter from "./routes/chat";
 import odooRoutes from "./routes/odoo";
+import unpaidRoutes from "./routes/unpaid";
 
 //  เพิ่มเติมสำหรับ Socket.IO
 import { createServer } from "http";
@@ -64,7 +65,8 @@ app.get("/dbtest", async (_req, res) => {
 });
 
 /* ------------------ Routes ------------------ */
-app.use("/admin", odooRoutes); 
+app.use("/admin", odooRoutes);
+app.use("/admin", unpaidRoutes); 
 app.use("/admin", adminRouter);   // ฝั่งแอดมิน
 app.use("/screen", screenRouter); // จอใหญ่ (Big Screen) เปิดที่ /screen
 app.use("/chat", chatRouter); 
