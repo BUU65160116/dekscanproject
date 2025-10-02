@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ยืนยันเช็คอินโต๊ะ</title>
+  <link rel="stylesheet" href="/otp.css" />
+</head>
+<body class="otp-dark">
+  <div class="bg-glow"></div>
+
+  <main class="wrap">
+    <section class="card">
+      <h1 class="title">ยืนยันเช็คอินโต๊ะ</h1>
+      <p class="hint">กรอกรหัสยืนยัน 4 หลักที่ส่งไปยังเบอร์ของคุณ</p>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert"><%= error %></div>
+      <% } %>
+
+      <form id="otpForm" method="POST" action="<%= action || '/auth/verify-otp' %>">
+        <% if (typeof csrfToken !== 'undefined') { %>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% } %>
+        <input type="hidden" id="otpHidden" name="otp">
+        <% if (typeof phone !== 'undefined' && phone) { %>
+          <input type="hidden" name="phone" value="<%= phone %>">
+        <% } %>
+
+        <div class="otp-row" role="group" aria-label="OTP 4 digits">
+          <% for (let i = 0; i < 4; i++) { %>
+            <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" />
+          <% } %>
+        </div>
+
+        <div class="resend">
+          ส่งรหัสใหม่ใน <span id="count">00:30</span>s
+          <button id="resendBtn" type="button" class="link" disabled hidden>ส่งรหัสใหม่</button>
+        </div>
+
+        <button class="btn" id="submitBtn" type="submit" disabled>ยืนยันเช็คอิน</button>
+      </form>
+
+      <div class="foot">
+        <span class="muted">ยังไม่ได้สมัคร?</span>
+        <a href="/register" class="link">สมัครเลย</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function(){
+      const boxes = Array.from(document.querySelectorAll('.otp-box'));
+      const hidden = document.getElementById('otpHidden');
+      const btn = document.getElementById('submitBtn');
+
+      boxes[0].focus();
+
+      function collect(){
+        const v = boxes.map(b => (b.value||'').replace(/\D/g,'').slice(0,1)).join('');
+        hidden.value = v;
+        btn.disabled = v.length !== boxes.length;
+      }
+
+      boxes.forEach((box,i)=>{
+        box.addEventListener('input', ()=>{
+          box.value = box.value.replace(/\D/g,'').slice(0,1);
+          if (box.value && i < boxes.length-1){ boxes[i+1].focus(); boxes[i+1].select(); }
+          collect();
+        });
+        box.addEventListener('keydown', (e)=>{
+          if (e.key==='Backspace' && !box.value && i>0) boxes[i-1].focus();
+          if (e.key==='ArrowLeft' && i>0) boxes[i-1].focus();
+          if (e.key==='ArrowRight' && i<boxes.length-1) boxes[i+1].focus();
+        });
+        box.addEventListener('paste',(e)=>{
+          const t=(e.clipboardData||window.clipboardData).getData('text')||'';
+          const d=t.replace(/\D/g,'').slice(0,boxes.length).split('');
+          if(!d.length) return;
+          e.preventDefault();
+          boxes.forEach((b,idx)=>b.value=d[idx]||'');
+          collect();
+          (boxes[Math.min(d.length,boxes.length)-1]||boxes[boxes.length-1]).focus();
+        });
+      });
+
+      // countdown
+      const el = document.getElementById('count');
+      let remain = 30;
+      const timer = setInterval(()=>{
+        remain--;
+        el.textContent = `00:${String(Math.max(remain,0)).padStart(2,'0')}`;
+        if (remain<=0) clearInterval(timer);
+      },1000);
+    })();
+  </script>
+</body>
+</html>
