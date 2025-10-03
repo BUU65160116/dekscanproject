@@ -239,7 +239,7 @@
 
         if (!j.ok) throw new Error(j.error || 'โหลดไม่สำเร็จ');
         if (!j.data || !j.data.length) {
-          unpaidGrid.innerHTML = `<div class="muted">ไม่มีค้างชำระ</div>`;
+          unpaidGrid.innerHTML = `<div class="muted">ไม่มีค้างชำระวันนี้</div>`;
           return;
         }
         unpaidGrid.innerHTML = j.data.map(unpaidCardHtml).join('');
