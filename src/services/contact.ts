@@ -14,9 +14,19 @@ export async function findLatestContactByTableNo(tableNo: number): Promise<Conta
     JOIN tableqr t ON t.TableID = s.TableID
     JOIN customer c ON c.CustomerID = s.CustomerID
     WHERE t.TableID = ?
+    AND s.ScanTime >= CURRENT_DATE()
+    AND s.ScanTime <  CURRENT_DATE() + INTERVAL 1 DAY
     ORDER BY s.ScanTime DESC
-    LIMIT 1 
+    LIMIT 5 
   `; // ^^เเสดงรายชื่อคนในโต๊ะที่เเสกน หน้าข้อมูลติดต่อ LIMIT 1
+
+ /* 
+ ตั้งแต่เวลา date_order ของโต๊ะนั้น → ถึงเวลา “ปิดรอบ” (เช่น 23:30) เปลี่ยนได้
+  WHERE t.TableID = :tableNo
+  AND s.ScanTime >= :start
+  AND s.ScanTime <  :end
+  ORDER BY s.ScanTime DESC
+ */
   try {
     const [rows] = await pool.query(sql, [tableNo]);
     const r: any = (Array.isArray(rows) && rows.length) ? rows[0] : null;
