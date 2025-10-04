@@ -85,7 +85,11 @@ export async function getCompanyId(uid: number): Promise<number> {
 
 // (ตัวช่วย) สร้าง context บริษัทตาม company_id — จะใช้ในสเตปถัดไป
 export function buildCompanyContext(companyId: number) {
-  return { allowed_company_ids: [companyId], company_id: companyId };
+  return {
+    allowed_company_ids: [companyId],
+    company_id: companyId,
+    tz: process.env.APP_TZ || "Asia/Bangkok",   
+  };
 }
 
 // TODO(สเตป 3.2): จะเพิ่มฟังก์ชัน fetchOrders() / fetchUnpaid() ที่นี่
@@ -101,7 +105,7 @@ export type UnpaidOrder = {
   amountPaid: number;         // ยอดที่จ่ายแล้ว
   amountDue: number;          // ค้างชำระ = Total - Paid
   state: string;              // ปกติจะเป็น "draft"
-  dateOrderUtc: string;       // เวลาจาก Odoo (UTC string เดิม) — ไปแปลงเป็นเวลาไทยตอนแสดงผล
+  dateOrderUtc: string | null; // เวลาท้องถิ่นตาม tz ที่ส่งให้ Odoo (เช่น Asia/Bangkok)
 };
 
 /**
@@ -160,7 +164,7 @@ export async function fetchUnpaidOrders(limit = 300): Promise<UnpaidOrder[]> {
       amountPaid,
       amountDue: +(amountTotal - amountPaid).toFixed(2),
       state: r.state,
-      dateOrderUtc: r.date_order, // เก็บค่าเดิมเป็น UTC string
+      dateOrderUtc: r.date_order ?? null,  // ตอนนี้ Odoo แปลงเป็นเวลา Local ตาม tz แล้ว ไม่ใช่ UTC
     };
   });
 

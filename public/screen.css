@@ -126,7 +126,7 @@ html,body{
 }
 
 /* Footer ticker */
-.screen-footer{ }
+/* .screen-footer{ } */
 .ticker{
   position:relative; height:48px; border:1px solid var(--border);
   border-radius:16px; overflow:hidden; background:#0f1520;

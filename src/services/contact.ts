@@ -15,8 +15,8 @@ export async function findLatestContactByTableNo(tableNo: number): Promise<Conta
     JOIN customer c ON c.CustomerID = s.CustomerID
     WHERE t.TableID = ?
     ORDER BY s.ScanTime DESC
-    LIMIT 1
-  `;
+    LIMIT 1 
+  `; // ^^เเสดงรายชื่อคนในโต๊ะที่เเสกน หน้าข้อมูลติดต่อ LIMIT 1
   try {
     const [rows] = await pool.query(sql, [tableNo]);
     const r: any = (Array.isArray(rows) && rows.length) ? rows[0] : null;
