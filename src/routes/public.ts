@@ -1,88 +1,29 @@
+// src/routes/public.ts
+// [refactor-mapping-only] เหลือแค่แม็ปเส้นทาง → controller
 import { Router } from "express";
 import { showLogin, submitLogin, showRegister, submitRegister } from "../controllers/user.controller";
-import { requireAuth } from "../middlewares/auth"; // ✅ import middleware ที่เราสร้างไว้
-import { getTotalPoints } from "../services/points"; 
-import { pool } from "../services/db";
-const SHOP = process.env.SHOP_CODE || "MYBAR";
+import { requireAuth } from "../middlewares/auth";
+
+// [new] import controller ของ public แทน inline handler
+import {
+  showHome,
+  showPointsPage,
+  showWarpPage,
+  logout,
+} from "../controllers/public.controller";
+
 const router = Router();
 
-// เมื่อลูกค้าสแกน จะเข้าหน้า Login ก่อนเสมอ
+// Login/Register (คงเดิม)
 router.get("/login", showLogin);
 router.post("/login", submitLogin);
-
-// แสดงหน้า Register 
 router.get("/register", showRegister);
 router.post("/register", submitRegister);
 
-router.get("/home", async (req, res) => {
-  // กันกรณียังไม่ล็อกอิน
-  if (!req.session?.user) return res.redirect("/login");
-
-  // ✅ รองรับ /home?table=... (เช่นจาก QR)
-  const q = req.query.table;
-  if (typeof q === "string" && q.length > 0) {
-    // เก็บ label ไว้โชว์ (เช่น A1)
-    req.session.user.Table = q;
-    // ถ้าเป็นตัวเลขล้วน เก็บเป็น tableId (number) เผื่อไปใช้กับ FK/DB
-    if (/^\d+$/.test(q)) {
-      req.session.tableId = Number(q);
-    }
-  }
-
-  const user = req.session.user;
-  const points = await getTotalPoints(user.CustomerID); 
-
-  // เช็คอินวันนี้แล้วหรือยัง
-  const [todayRows] = await pool.query<any[]>(
-    "SELECT 1 FROM points_log WHERE CustomerID = ? AND LogDate = CURDATE() LIMIT 1",
-    [user.CustomerID]
-  );
-  const checkedInToday = todayRows.length > 0;
-
-  res.render("home", {
-    shop: SHOP,
-    user,
-    points,
-    checkedInToday,
-    table: user.Table || "",
-  });
-});
-
-//  โครงหน้า “รายละเอียดแต้ม”
-router.get("/points", requireAuth, async (req, res) => {
-  const user = req.session.user;
-  // ไว้ค่อยทำจริง — ตอนนี้แค่ stub
-  res.render("points", { user });
-});
-
-//  โครงหน้า “แจกวาปขึ้นจอใหญ่”
-router.get("/warp", requireAuth, (req, res) => {
-  const user = req.session.user;
-  // ไว้ค่อยเชื่อม socket/realtime — ตอนนี้แค่ stub
-  res.render("warp", { user, shop: SHOP });
-});
-
-// //  โครงหน้า “แชทเรียลไทม์ (ฝั่งลูกค้า)”
-// router.get("/chat", requireAuth, (req, res) => {
-//   const user = req.session.user;
-//   // ไว้ค่อยต่อ socket.io — ตอนนี้แค่ stub
-//   res.render("chat", { user });
-// });
-
-
-// ออกจากระบบ
-router.get("/logout", (req, res) => {
-  // ทำลาย session ฝั่งเซิร์ฟเวอร์
-  req.session.destroy(err => {
-    if (err) {
-      console.error("logout error:", err);
-      // เผื่อกรณี destroy มีปัญหา ให้ส่งกลับหน้า login อยู่ดี
-    }
-    // ลบคุกกี้ session ฝั่งเบราว์เซอร์ (ชื่อปกติคือ connect.sid ถ้าไม่ได้เปลี่ยน)
-    res.clearCookie("connect.sid");
-    // กลับไปหน้า Login
-    res.redirect("/login");
-  });
-});
+// Home / Points / Warp / Logout (ย้ายไป controller)
+router.get("/home", showHome);
+router.get("/points", requireAuth, showPointsPage);
+router.get("/warp", requireAuth, showWarpPage);
+router.get("/logout", logout);
 
 export default router;

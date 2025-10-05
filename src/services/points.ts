@@ -17,6 +17,15 @@ export async function getTotalPoints(customerId: number): Promise<number> {
   return rows.length > 0 ? Number(rows[0].TotalPoints || 0) : 0;
 }
 
+/**  เช็คว่าลูกค้าเช็คอินวันนี้แล้วหรือยัง */
+export async function hasCheckedInToday(customerId: number): Promise<boolean> {
+  const [todayRows] = await pool.query<any[]>(
+    "SELECT 1 FROM points_log WHERE CustomerID = ? AND LogDate = CURDATE() LIMIT 1",
+    [customerId]
+  );
+  return todayRows.length > 0;
+}
+
 /**
  *  ให้แต้ม 1 แต้ม ครั้งแรกของวัน (ระบบร้านเดียว)
  * - ถ้าเคยให้วันนี้แล้ว จะไม่เพิ่มซ้ำ
