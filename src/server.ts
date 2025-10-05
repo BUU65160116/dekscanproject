@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import session from "express-session";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
+import { registerChatSockets } from "./socket/chat.socket";
 
 import { pool } from "./services/db";
 import publicRoutes from "./routes/public";   // /login, /register
@@ -73,9 +74,7 @@ app.use("/", publicRoutes);     // หน้า public (login/register)
 
 
 /* ------------------ Socket.IO ------------------ */
-io.on("connection", (socket) => {
-  console.log("socket connected:", socket.id);
-});
+registerChatSockets(io);
 
 /* ------------------ Start Server ------------------ */
 const PORT = Number(process.env.PORT || 3000);
