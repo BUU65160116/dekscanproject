@@ -1,11 +1,12 @@
-import express from "express";
 import path from "path";
-import dotenv from "dotenv";
+import express from "express";
 import session from "express-session";
+import dotenv from "dotenv";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
-import { registerChatSockets } from "./socket/chat.socket";
 
+// internal
+import { registerChatSockets } from "./socket/chat.socket";
 import { pool } from "./services/db";
 import publicRoutes from "./routes/public";   // /login, /register
 import adminRouter from "./routes/admin";     // กลุ่ม /admin ที่เหลือ
@@ -16,23 +17,28 @@ import unpaidRoutes from "./routes/unpaid";   // /admin/unpaid/*
 
 dotenv.config();
 
+// -----------------------------------------------------------------------------
+// App & Socket.IO
+// -----------------------------------------------------------------------------
 const app = express();
-
-
-//  ห่อด้วย http server เพื่อใช้กับ socket.io
 const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer);
 
-/* ------------------ Core & Middlewares ------------------ */
-// session
-app.use(session({
-  secret: process.env.SESSION_SECRET || "dev-secret",
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 8 } // 8 ชั่วโมง
-}));
+// -----------------------------------------------------------------------------
+// Core Middlewares
+// -----------------------------------------------------------------------------
 
-// body parsers (อย่าให้ซ้ำ)
+// session
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "dev-secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 1000 * 60 * 60 * 8 }, // 8 ชั่วโมง
+  })
+);
+
+// body parsers
 app.use(express.urlencoded({ extended: true })); // รองรับ <form method="POST">
 app.use(express.json());
 
@@ -43,14 +49,15 @@ app.set("views", path.join(__dirname, "views"));
 // static files (เช่น /public/screen.css)
 app.use(express.static(path.join(process.cwd(), "public")));
 
-//  inject io เข้าไปใน req สำหรับใช้งานใน routes อื่น (ชั่วคราวแคสเป็น any)
+// inject io เข้า req (ใช้ any เพื่อลดผลกระทบ type)
 app.use((req, _res, next) => {
   (req as any).io = io;
   next();
 });
 
-
-/* ------------------ Health & Tools ------------------ */
+// -----------------------------------------------------------------------------
+// Health & Tools
+// -----------------------------------------------------------------------------
 app.get("/health", (_req, res) => res.send("OK"));
 
 app.get("/dbtest", async (_req, res) => {
@@ -63,25 +70,29 @@ app.get("/dbtest", async (_req, res) => {
   }
 });
 
-/* ------------------ Routes ------------------ */
+// -----------------------------------------------------------------------------
+// Routes
+// -----------------------------------------------------------------------------
 app.use("/admin", odooRoutes);
 app.use("/admin", unpaidRoutes);
 app.use("/admin", adminRouter);
 
 app.use("/screen", screenRouter);
 app.use("/chat", chatRouter);
-app.use("/", publicRoutes);     // หน้า public (login/register)
+app.use("/", publicRoutes); // หน้า public (login/register)
 
-
-/* ------------------ Socket.IO ------------------ */
+// -----------------------------------------------------------------------------
+// Socket.IO
+// -----------------------------------------------------------------------------
 registerChatSockets(io);
 
-/* ------------------ Start Server ------------------ */
+// -----------------------------------------------------------------------------
+// Start Server
+// -----------------------------------------------------------------------------
 const PORT = Number(process.env.PORT || 3000);
 httpServer.listen(PORT, () => {
   console.log(`Server running → http://localhost:${PORT}`);
 });
-
 
 
 
