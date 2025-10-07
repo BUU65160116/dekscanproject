@@ -1,0 +1,58 @@
+/* public/warp.css */
+
+/* โครงสร้างพื้นฐาน */
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Thai", sans-serif;
+  color: #111; background: #f7f7f9;
+}
+.wrap { max-width: 720px; margin: 24px auto; padding: 0 16px; }
+
+/* แถบบน */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.topbar h1 { font-size: 1.35rem; margin: 0; }
+.credits { font-weight: 600; }
+
+/* การ์ดหลัก */
+.card {
+  background: #fff; border: 1px solid #eaeaea; border-radius: 14px;
+  padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,.04);
+}
+
+/* ฟิลด์กรอก */
+.field { margin: 12px 0; }
+.field label { display: block; margin-bottom: 6px; font-size: .92rem; }
+textarea, input[type="url"], input[type="text"] {
+  width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 10px;
+  background: #fff; font-size: 1rem; outline: none;
+}
+textarea:focus, input:focus { border-color: #7aa7ff; box-shadow: 0 0 0 3px rgba(122,167,255,.15); }
+textarea { min-height: 110px; resize: vertical; }
+
+/* ปุ่ม */
+.row { display: flex; gap: 10px; margin-top: 12px; }
+button {
+  appearance: none; border: 1px solid #ddd; background: #111; color: #fff;
+  padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600;
+}
+button.soft { background: #fff; color: #111; }
+button:hover { filter: brightness(1.03); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+
+/* สถานะ / ข้อความช่วย */
+.status { margin-top: 12px; min-height: 22px; }
+.hint, .muted { color: #666; }
+.ok { color: #138a36; }
+.err { color: #b00020; }
+.right { text-align: right; }
+
+.footnote { color: #666; font-size: .9rem; }
+.back { margin-top: 10px; }
+.back a { color: #2b6cb0; text-decoration: none; }
+.back a:hover { text-decoration: underline; }
+
+/* รองรับจอเล็ก */
+@media (max-width: 420px){
+  .wrap { padding: 0 12px; }
+  .row { flex-direction: column; }
+}

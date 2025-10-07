@@ -14,6 +14,7 @@ import screenRouter from "./routes/screen";   // จอใหญ่
 import chatRouter from "./routes/chat";       // แชท
 import odooRoutes from "./routes/odoo";       // /admin ที่เกี่ยวกับ Odoo
 import unpaidRoutes from "./routes/unpaid";   // /admin/unpaid/*
+import warpRoutes from "./routes/warp";
 
 dotenv.config();
 
@@ -77,6 +78,7 @@ app.use("/admin", odooRoutes);
 app.use("/admin", unpaidRoutes);
 app.use("/admin", adminRouter);
 
+app.use(warpRoutes);
 app.use("/screen", screenRouter);
 app.use("/chat", chatRouter);
 app.use("/", publicRoutes); // หน้า public (login/register)

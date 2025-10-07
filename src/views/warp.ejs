@@ -1,10 +1,263 @@
 <!DOCTYPE html>
 <html lang="th">
-<head><meta charset="utf-8"><title>แจกวาปขึ้นจอ</title></head>
-<body style="font-family:system-ui;padding:16px;">
-  <h2>แจกวาปขึ้นจอ — <%= shop %></h2>
-  <p>สวัสดี <strong><%= user.Name %></strong> (โต๊ะ <%= user.Table %>)</p>
-  <p>หน้านี้จะมีปุ่ม “ส่งวาป” เพื่อเด้งขึ้นจอใหญ่ของร้าน (Realtime) — <em>จะทำในสเตปถัดไป</em></p>
-  <p><a href="/home">← กลับหน้า Home</a></p>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title><%= title || "แจกวาป" %></title>
+
+  <!-- ใช้ไฟล์ warp.css เดิม -->
+  <link rel="stylesheet" href="/warp.css" />
+  <style>
+    /* เพิ่มสไตล์พรีวิวรูป + ข้อความซ้อน */
+    .preview {
+      position: relative; margin-top: 12px; border: 1px dashed #ddd; border-radius: 12px;
+      overflow: hidden; background: #fafafa;
+    }
+    .preview canvas { display: block; width: 100%; height: auto; }
+    .controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .filetip { font-size:.9rem; color:#666; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1> แจกวาป</h1>
+      <div class="credits">สิทธิ์คงเหลือ: <span id="left" class="muted">-</span></div>
+    </div>
+
+    <section class="card">
+      <p class="hint">เลือกภาพจากมือถือ แล้วพิมพ์ข้อความบนรูป (สูงสุด 20 ตัวอักษร)</p>
+
+      <!-- เลือกรูปจากเครื่อง -->
+      <div class="field">
+        <label class="muted">เลือกรูป</label>
+        <div class="controls">
+          <input id="file" type="file" accept="image/*" />
+          <span class="filetip">แนะนำไม่เกิน ~5MB, ระบบจะย่ออัตโนมัติ</span>
+        </div>
+      </div>
+
+      <!-- พิมพ์ข้อความ -->
+      <div class="field">
+        <label class="muted">ข้อความบนรูป</label>
+        <input type="text" id="msg" maxlength="20" placeholder="พิมพ์ข้อความ / แคปชัน / IG "></input>
+        <div class="muted right"><span id="count">0</span>/20คำ</div>
+      </div>
+
+      <!-- พรีวิว (แสดงภาพพร้อมข้อความซ้อน) -->
+      <div id="preview" class="preview" style="display:none">
+        <canvas id="canvas"></canvas>
+      </div>
+
+      <!-- ปุ่ม -->
+      <div class="row" style="margin-top:12px">
+        <button id="btnSend">ส่งวาป</button>
+        <button id="btnCheck" class="soft">เช็คสิทธิ์</button>
+      </div>
+
+      <!-- สถานะ -->
+      <div id="status" class="status"></div>
+    </section>
+
+    <p class="muted footnote">
+      เมื่อส่งสำเร็จ ข้อความจะไปเข้าคิวและถูกฉายบนจอใหญ่ ~<%= process.env.WARP_SLIDE_SECONDS || 15 %> วินาที/ครั้ง
+    </p>
+    <p class="back"><a href="/home">← กลับหน้า Home</a></p>
+  </div>
+
+  <script>
+    // ====== อ้างอิง DOM ======
+    const elLeft   = document.getElementById('left');
+    const elMsg    = document.getElementById('msg');
+    const elCount  = document.getElementById('count');
+    const elFile   = document.getElementById('file');
+    const elPreview= document.getElementById('preview');
+    const elCanvas = document.getElementById('canvas');
+    const ctx      = elCanvas.getContext('2d');
+    const elSend   = document.getElementById('btnSend');
+    const elCheck  = document.getElementById('btnCheck');
+    const elStatus = document.getElementById('status');
+
+    const esc = (s)=> (s||"").toString().replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+    // ====== สถานะรูป/ข้อความในหน้านี้ ======
+    let baseImage = null;   // HTMLImageElement ของรูปดิบ
+    let composedDataURL = null; // data:image/... ที่ซ้อนข้อความแล้ว (พร้อมส่ง)
+
+    // ====== ตัวช่วยย่อภาพให้กว้างสุด 1280 px เพื่อไม่ให้ไฟล์ใหญ่เกิน ======
+    function drawToCanvasWithText(img, text){
+      const MAX_W = 1280;
+      const ratio = img.width > MAX_W ? (MAX_W / img.width) : 1;
+      const w = Math.round(img.width * ratio);
+      const h = Math.round(img.height * ratio);
+
+      elCanvas.width = w;
+      elCanvas.height = h;
+
+      // วาดภาพพื้นหลัง
+      ctx.clearRect(0,0,w,h);
+      ctx.drawImage(img, 0, 0, w, h);
+
+      // วางข้อความ: กึ่งกลางแนวนอน และ "ต่ำกว่ากึ่งกลางลงมานิดหน่อย"
+      const fontSize = Math.max(24, Math.round(w * 0.045)); // ขนาดยืดหยุ่นตามกว้างภาพ
+      ctx.font = `600 ${fontSize}px system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Thai', sans-serif`;
+      ctx.fillStyle = "rgba(0,0,0,0.6)";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+
+      // เงาซ้อนให้เด่นขึ้น
+      ctx.shadowColor = "rgba(0,0,0,0.35)";
+      ctx.shadowBlur = Math.round(fontSize/4);
+
+      // คำนวณบรรทัด (ตัดคำอย่างง่าย)
+      const maxWidth = Math.round(w * 0.9);
+      const lines = breakLines(ctx, text, maxWidth);
+      const lineHeight = Math.round(fontSize * 1.25);
+
+      // จุดเริ่ม y: ต่ำกว่ากึ่งกลางลงมา ~10% ของภาพ
+      const startY = Math.round(h * 0.80 - (lines.length * lineHeight)/2);
+
+      // วาดพื้นหลังโปร่งบางๆ ใต้ตัวหนังสือ (ช่วยอ่านง่าย)
+      // หา max line width ที่จะใช้ background box
+      const widths = lines.map(line => ctx.measureText(line).width);
+      const boxW = Math.min(maxWidth, Math.max(...widths) + Math.round(fontSize*0.8));
+      const boxH = lines.length * lineHeight + Math.round(fontSize*0.6);
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
+      ctx.shadowColor = "transparent";
+      roundRect(ctx, (w-boxW)/2, startY - Math.round(fontSize*0.3), boxW, boxH, Math.round(fontSize*0.3));
+      ctx.fill();
+
+      // วาดข้อความ (กลับมาใช้สีเข้ม)
+      ctx.fillStyle = "#111";
+      ctx.shadowColor = "rgba(255,255,255,0.65)";
+      ctx.shadowBlur = Math.round(fontSize/5);
+
+      lines.forEach((line, i) => {
+        ctx.fillText(line, Math.round(w/2), startY + i*lineHeight);
+      });
+
+      // export data url (png)
+      composedDataURL = elCanvas.toDataURL("image/png", 0.9);
+    }
+
+    // ตัดบรรทัดอย่างง่ายตามความกว้างสูงสุด
+    function breakLines(context, text, maxWidth){
+      const words = (text||"").split(/\s+/).filter(Boolean);
+      const lines = [];
+      let line = "";
+      for(const word of words){
+        const test = line ? (line + " " + word) : word;
+        if(context.measureText(test).width <= maxWidth){
+          line = test;
+        }else{
+          if(line) lines.push(line);
+          line = word;
+        }
+      }
+      if(line) lines.push(line);
+      // ถ้าข้อความว่าง ให้มีอย่างน้อย 1 บรรทัด (เพื่อจัดตำแหน่ง)
+      if(lines.length === 0) lines.push("");
+      return lines;
+    }
+
+    // วาดสี่เหลี่ยมขอบมน (ใช้กับพื้นหลังข้อความ)
+    function roundRect(ctx, x, y, w, h, r){
+      const radius = Math.min(r, w/2, h/2);
+      ctx.beginPath();
+      ctx.moveTo(x+radius, y);
+      ctx.arcTo(x+w, y, x+w, y+h, radius);
+      ctx.arcTo(x+w, y+h, x, y+h, radius);
+      ctx.arcTo(x, y+h, x, y, radius);
+      ctx.arcTo(x, y, x+w, y, radius);
+      ctx.closePath();
+    }
+
+    // เมื่อพิมพ์ข้อความ → อัปเดตตัวนับ + ถ้ามีรูปให้ re-render พรีวิว
+    elMsg.addEventListener('input', () => {
+      elCount.textContent = elMsg.value.length;
+      if(baseImage){
+        drawToCanvasWithText(baseImage, elMsg.value.trim());
+      }
+    });
+
+    // เมื่อเลือกรูปใหม่
+    elFile.addEventListener('change', async (e) => {
+      const f = e.target.files && e.target.files[0];
+      if(!f) { baseImage = null; composedDataURL = null; elPreview.style.display='none'; return; }
+
+      // อ่านไฟล์เป็น DataURL แล้วโหลดเข้า <img>
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          baseImage = img;
+          elPreview.style.display = 'block';
+          drawToCanvasWithText(img, elMsg.value.trim());
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(f);
+    });
+
+    // ดึงเครดิตคงเหลือจากโต๊ะใน session
+    async function refreshCredits(){
+      elStatus.textContent = 'กำลังเช็คสิทธิ์...';
+      try{
+        const r = await fetch('/warp/credits');
+        const j = await r.json();
+        if(!j.ok) throw new Error(j.error || 'error');
+        elLeft.textContent = j.data.left;
+        elStatus.innerHTML = '<span class="ok">อัปเดตสิทธิ์ล่าสุดแล้ว</span>';
+        elSend.disabled = (j.data.left <= 0);
+      }catch(err){
+        elStatus.innerHTML = '<span class="err">เช็คสิทธิ์ไม่สำเร็จ: '+ esc(err.message||err) +'</span>';
+      }
+    }
+
+    // ส่งวาป: ส่งรูปที่ซ้อนข้อความแล้ว (ถ้าเลือกรูป) ไปที่ /warp/use เป็น imageUrl (data URL)
+    async function submitWarp(){
+      const message = elMsg.value.trim();
+      if(message.length === 0){
+        elStatus.innerHTML = '<span class="err">กรุณากรอกข้อความ</span>';
+        elMsg.focus(); return;
+      }
+      // ถ้าเลือกรูป → composedDataURL จะไม่ใช่ null
+      const imageUrl = composedDataURL || null;
+
+      elSend.disabled = true;
+      elStatus.textContent = 'กำลังส่ง...';
+      try{
+        const r = await fetch('/warp/use', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, imageUrl })
+        });
+        const j = await r.json();
+        if(!j.ok) throw new Error(j.error || 'ส่งไม่สำเร็จ');
+
+        elStatus.innerHTML = '<span class="ok">ส่งสำเร็จ! คิว #' + j.queueId + ' | สิทธิ์คงเหลือ: ' + j.left + '</span>';
+        elLeft.textContent = j.left;
+
+        // รีโหลดอัตโนมัติหลัง 5 วินาที (ปรับเวลาได้)
+        setTimeout(() => location.reload(), 5000);
+        
+        // เคลียร์ฟอร์ม
+        elMsg.value = ''; elCount.textContent = 0;
+        elFile.value = ''; baseImage = null; composedDataURL = null;
+        elPreview.style.display = 'none';
+      }catch(err){
+        elStatus.innerHTML = '<span class="err">'+ esc(err.message||err) +'</span>';
+      }finally{
+        const left = Number(elLeft.textContent || 0);
+        elSend.disabled = (left <= 0);
+      }
+    }
+
+    elCheck.addEventListener('click', refreshCredits);
+    elSend.addEventListener('click', submitWarp);
+
+    // เริ่มต้น: เช็คสิทธิ์
+    refreshCredits();
+  </script>
 </body>
 </html>
