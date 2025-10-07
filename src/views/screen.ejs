@@ -132,6 +132,24 @@
       const chatList = document.getElementById("chatList");
       chatList.innerHTML = `<li class="empty">ยังไม่มีข้อความแชท</li>`;
     });
+    // ====== [ เพิ่มจากสเตป Warp แจกวาป ] ======
+    // กล่องวาปฝั่งขวา (panel "วาป")
+    const warpList = document.getElementById("warpList");
+
+    // รับ event "warp:now" → แสดงข้อความหรือรูปบนจอใหญ่
+    socket.on("warp:now", (item) => {
+      warpList.innerHTML = `
+        <li class="item warp-now">
+          ${item.ImageURL ? `<img src="${item.ImageURL}" class="warp-img"/>` : ""}
+          <p class="warp-msg">${(item.Message || "").replace(/</g,"&lt;")}</p>
+          <small>โต๊ะ ${item.TableID || "-"} · เหลือเวลา ~${item.DurationSec || 15}s</small>
+        </li>`;
+    });
+
+    // รับ event "warp:done" → ล้างออก รอคิวถัดไป
+    socket.on("warp:done", () => {
+      warpList.innerHTML = `<li class="empty">รอคิวถัดไป...</li>`;
+    });
   </script>
 </body>
 </html>

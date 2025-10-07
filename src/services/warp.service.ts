@@ -149,3 +149,39 @@ export async function consumeOneCredit(
     conn.release();
   }
 }
+/* -----------------------------------------------------------
+   6) เพิ่มตัวประมวลผลใน service
+----------------------------------------------------------- */
+// ดึงรายการที่กำลังแสดงอยู่ 1 รายการ (ถ้ามี)
+export async function getCurrentShowing(){
+  const [rows]: any = await pool.query(
+    `SELECT * FROM warp_queue WHERE Status='showing' ORDER BY StartsAt DESC LIMIT 1`
+  );
+  return rows[0] || null;
+}
+
+// ดึงรายการถัดไปในคิว (queued) 1 รายการ
+export async function getNextQueued(){
+  const [rows]: any = await pool.query(
+    `SELECT * FROM warp_queue WHERE Status='queued' ORDER BY QueueID ASC LIMIT 1`
+  );
+  return rows[0] || null;
+}
+
+// เปลี่ยนสถานะเป็นกำลังแสดง 15 วิ
+export async function markShowing(qid: number, duration = 15){
+  await pool.query(
+    `UPDATE warp_queue
+     SET Status='showing', StartsAt=NOW(), DurationSec=?, UpdatedAt=NOW()
+     WHERE QueueID=?`,
+    [duration, qid]
+  );
+}
+
+// ปิดรายการที่จบแล้ว
+export async function markDone(qid: number){
+  await pool.query(
+    `UPDATE warp_queue SET Status='done', UpdatedAt=NOW() WHERE QueueID=?`,
+    [qid]
+  );
+}
