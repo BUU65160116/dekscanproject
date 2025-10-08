@@ -6,6 +6,24 @@
   <meta http-equiv="Cache-Control" content="no-store" />
   <title><%= title %></title>
   <link rel="stylesheet" href="/screen.css" />
+  <style>
+    /* ป้องกันรูปหลุดเฟรม/เบี้ยว และทับข้อความ */
+    .warp-now{ position:relative; }
+    .warp-img{
+      display:block;
+      width:100%;
+      height:auto;
+      object-fit:contain;
+      background:#000;
+      border-radius: 8px;
+    }
+    .warp-msg{
+      margin-top:.5rem;
+      font-size:1.25rem;
+      line-height:1.35;
+      word-break: break-word;
+    }
+  </style>
 </head>
 <body>
   <div class="screen-wrap">
@@ -63,26 +81,23 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-
-    // helper: escape ข้อความกัน XSS
     const esc = (s) => (s || "").toString().replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const chatList = document.getElementById("chatList");
+    const warpList = document.getElementById("warpList");// อ้างอิงลิสต์ฝั่งวาป
 
-    //  โหลดประวัติแชทล่าสุดตอนเปิด (ต้องให้ /screen/history ส่ง chatId มาด้วย)
+    // โหลดประวัติแชท
     async function loadHistory(){
       try{
         const res = await fetch("/screen/history");
         const json = await res.json();
         if(!json.ok) return;
 
-        const chatList = document.getElementById("chatList");
-        chatList.innerHTML = ""; // ล้าง placeholder
-
-        // ใส่จากเก่าไปใหม่ (reverse)
+        chatList.innerHTML = "";
         [...json.data].reverse().forEach(it => {
           const li = document.createElement("li");
           li.className = "item";
-          li.dataset.id = it.chatId;      //  เก็บ chatId ใน DOM
-          li.id = `chat-${it.chatId}`;    //  ตั้ง id หาเจอง่ายตอนลบ
+          li.dataset.id = it.chatId;
+          li.id = `chat-${it.chatId}`;
           li.innerHTML = `
             <span class="name">โต๊ะ ${it.tableId || "-"}</span>
             <span class="msg">${esc(it.message)}</span>
@@ -97,9 +112,8 @@
     }
     loadHistory();
 
-    //  รับข้อความใหม่แบบเรียลไทม์
+    // ข้อความใหม่ (realtime)
     socket.on("newMessage", (data) => {
-      const chatList = document.getElementById("chatList");
       const empty = chatList.querySelector(".empty");
       if (empty) empty.remove();
 
@@ -116,40 +130,87 @@
       chatList.appendChild(li);
     });
 
-    //  ลบแถวเดี่ยวแบบเรียลไทม์ (แอดมินกดลบ)
+    // ลบข้อความเดี่ยว (realtime)
     socket.on("deleteMessage", ({ chatId }) => {
       const el = document.getElementById(`chat-${chatId}`);
       if (el) el.remove();
-
-      const chatList = document.getElementById("chatList");
       if (!chatList.querySelector(".item")) {
         chatList.innerHTML = `<li class="empty">ยังไม่มีข้อความแชท</li>`;
       }
     });
 
-    //  ล้างทุกข้อความแบบเรียลไทม์ (แอดมินกด clear)
+    // ล้างทั้งหมด (realtime)
     socket.on("clearChat", () => {
-      const chatList = document.getElementById("chatList");
       chatList.innerHTML = `<li class="empty">ยังไม่มีข้อความแชท</li>`;
     });
-    // ====== [ เพิ่มจากสเตป Warp แจกวาป ] ======
-    // กล่องวาปฝั่งขวา (panel "วาป")
-    const warpList = document.getElementById("warpList");
 
-    // รับ event "warp:now" → แสดงข้อความหรือรูปบนจอใหญ่
-    socket.on("warp:now", (item) => {
+     // ===== แจกวาป (ฝั่งจอใหญ่) =====
+
+   // ตรวจ/เลือก src รูปให้ปลอดภัย: รองรับ key หลายแบบ + trim + ต้องเป็น data:image/...;base64
+  function safeImgSrc(item){
+    const raw = (item.ImageURL ?? item.imageUrl ?? item.image ?? "").toString().trim();
+    if (/^data:image\/(png|jpe?g|gif|webp);base64,/i.test(raw)) return raw;
+    return "";
+  }
+
+  // แสดงวาป (preload ก่อนค่อยใส่ DOM) + มี log ให้ไล่ปัญหา
+  function renderWarpNow(item){
+    const msg   = (item.Message ?? item.message ?? "");
+    const secs  = (item.DurationSec ?? item.durationSec ?? 15);
+    const table = (item.TableID ?? item.tableId ?? "-");
+    const src   = safeImgSrc(item);
+
+    // ไม่มีรูป → ข้อความล้วน
+    if (!src) {
+      console.warn("[warp] no/invalid image, show text only", {
+        hasImage: !!(item.ImageURL || item.imageUrl || item.image),
+        len: (item.ImageURL || item.imageUrl || item.image || "").length
+      });
       warpList.innerHTML = `
         <li class="item warp-now">
-          ${item.ImageURL ? `<img src="${item.ImageURL}" class="warp-img"/>` : ""}
-          <p class="warp-msg">${(item.Message || "").replace(/</g,"&lt;")}</p>
-          <small>โต๊ะ ${item.TableID || "-"} · เหลือเวลา ~${item.DurationSec || 15}s</small>
+          <p class="warp-msg">${esc(msg)}</p>
+          <small>โต๊ะ ${table} · เหลือเวลา ~${secs}s</small>
         </li>`;
-    });
+      return;
+    }
 
-    // รับ event "warp:done" → ล้างออก รอคิวถัดไป
-    socket.on("warp:done", () => {
-      warpList.innerHTML = `<li class="empty">รอคิวถัดไป...</li>`;
+    // preload รูปก่อน
+    const img = new Image();
+    img.className = "warp-img";
+    img.onload = () => {
+      warpList.innerHTML = `
+        <li class="item warp-now">
+          <img src="${src}" class="warp-img" />
+          <p class="warp-msg">${esc(msg)}</p>
+          <small>โต๊ะ ${table} · เหลือเวลา ~${secs}s</small>
+        </li>`;
+    };
+    img.onerror = (e) => {
+      console.warn("[warp] image load failed → fallback to text", { err:e, len:src.length });
+      warpList.innerHTML = `
+        <li class="item warp-now">
+          <p class="warp-msg">${esc(msg)}</p>
+          <small>โต๊ะ ${table} · เหลือเวลา ~${secs}s</small>
+        </li>`;
+    };
+    img.src = src; // เริ่มโหลด
+  }
+
+  // realtime: ได้คิวโชว์ตอนนี้
+  socket.on("warp:now", (item) => {
+    console.debug("[warp:now]", {
+      hasImage: !!(item.ImageURL || item.imageUrl || item.image),
+      len: (item.ImageURL || item.imageUrl || item.image || "").length,
+      table: item.TableID ?? item.tableId,
+      dur: item.DurationSec ?? item.durationSec
     });
+    renderWarpNow(item);
+  });
+
+  // realtime: จบเวลา → ล้างหน้าจอฝั่งวาป
+  socket.on("warp:done", () => {
+    warpList.innerHTML = `<li class="empty">รอคิวถัดไป...</li>`;
+  });
   </script>
 </body>
 </html>

@@ -185,3 +185,31 @@ export async function markDone(qid: number){
     [qid]
   );
 }
+
+// ดึงหมายเลขโต๊ะที่ยัง active จาก Odoo (ไม่ซ้ำ)
+export async function listActiveTableNosFromOdoo(): Promise<number[]> {
+  const orders = await fetchUnpaidOrders(500); // ใช้ของเดิม
+  const set = new Set<number>();
+  for (const o of orders) {
+    if (typeof o.tableNo === "number") set.add(o.tableNo);
+  }
+  return Array.from(set);
+}
+
+// รันรีคาลก์สิทธิ์ทุกโต๊ะจาก Odoo → อัปเดต warp_daily_credit
+export async function recalcAllTablesFromOdoo(): Promise<{ updated: number; skipped: number }> {
+  const tableNos = await listActiveTableNosFromOdoo();
+  const bizDate = getBizDate();
+
+  let updated = 0, skipped = 0;
+  for (const t of tableNos) {
+    try {
+      const total = await calcTotalCreditsFromOdoo(t);
+      await upsertDailyCredit(t, bizDate, total);
+      updated++;
+    } catch {
+      skipped++;
+    }
+  }
+  return { updated, skipped };
+}

@@ -5,6 +5,9 @@ import dotenv from "dotenv";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 
+
+import { recalcAllTablesFromOdoo } from "./services/warp.service";
+
 // internal
 import { registerChatSockets } from "./socket/chat.socket";
 import { pool } from "./services/db";
@@ -29,6 +32,10 @@ const io = new SocketIOServer(httpServer);
 // Core Middlewares
 // -----------------------------------------------------------------------------
 
+// ⬇ เพิ่ม limit ให้รองรับ dataURL base64 ของรูป (ย่อแล้ว) ได้สบาย
+app.use(express.json({ limit: "15mb" }));
+app.use(express.urlencoded({ extended: true, limit: "15mb" }));
+
 // session
 app.use(
   session({
@@ -38,10 +45,6 @@ app.use(
     cookie: { maxAge: 1000 * 60 * 60 * 8 }, // 8 ชั่วโมง
   })
 );
-
-// body parsers
-app.use(express.urlencoded({ extended: true })); // รองรับ <form method="POST">
-app.use(express.json());
 
 // view engine
 app.set("view engine", "ejs");
@@ -54,6 +57,17 @@ app.use(express.static(path.join(process.cwd(), "public")));
 app.use((req, _res, next) => {
   (req as any).io = io;
   next();
+});
+
+// ⬇ ตัวดัก error ของ body-parser ให้ตอบเป็น JSON (กัน parse พัง/ไฟล์ใหญ่)
+app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err?.type === "entity.too.large") {
+    return res.status(413).json({ ok: false, error: "payload-too-large" });
+  }
+  if (err instanceof SyntaxError && "body" in err) {
+    return res.status(400).json({ ok: false, error: "bad-json" });
+  }
+  next(err);
 });
 
 // -----------------------------------------------------------------------------
@@ -83,6 +97,31 @@ app.use("/screen", screenRouter);
 app.use("/chat", chatRouter);
 app.use("/", publicRoutes); // หน้า public (login/register)
 
+
+// ───────── Scheduler: Recalc warp credits from Odoo ─────────
+const RECALC_MIN = Math.max(0, Number(process.env.WARP_RECALC_MINUTES || "1")); // 0 = ปิด
+if (RECALC_MIN > 0) {
+  let isRecalcRunning = false;
+  setInterval(async () => {
+    if (isRecalcRunning) return;
+    isRecalcRunning = true;
+    try {
+      const { updated, skipped } = await recalcAllTablesFromOdoo();
+      console.log(`[warp/recalc] updated=${updated} skipped=${skipped}`);
+    } catch (e) {
+      console.error("[warp/recalc] error:", e);
+    } finally {
+      isRecalcRunning = false;
+    }
+  }, RECALC_MIN * 60 * 1000);
+  console.log(`[warp/recalc] scheduler enabled: every ${RECALC_MIN} minute(s)`);
+} else {
+  console.log("[warp/recalc] scheduler disabled");
+}
+
+
+
+
 // -----------------------------------------------------------------------------
 // Socket.IO
 // -----------------------------------------------------------------------------
@@ -95,77 +134,3 @@ const PORT = Number(process.env.PORT || 3000);
 httpServer.listen(PORT, () => {
   console.log(`Server running → http://localhost:${PORT}`);
 });
-
-
-
-
-
-// /* ------------------ OTP Helpers & Routes ------------------ */
-// // เก็บ OTP ชั่วคราวในหน่วยความจำ (เดโม)
-// // โปรดเปลี่ยนไปใช้ Redis/DB ในงานจริง
-// const otpStore = new Map<string, { code: string; expires: number }>();
-
-// function generateOTP(len = 6) {
-//   // คืนค่าเป็นสตริงตัวเลขความยาว len
-//   let s = "";
-//   while (s.length < len) s += Math.floor(Math.random() * 10);
-//   return s.slice(0, len);
-// }
-
-// function setOTP(phone: string, code: string, ttlSec = 300) {
-//   otpStore.set(phone, { code, expires: Date.now() + ttlSec * 1000 });
-// }
-
-// function verifyOTP(phone: string, code: string) {
-//   const item = otpStore.get(phone);
-//   if (!item) return false;
-//   if (Date.now() > item.expires) return false;
-//   return item.code === code;
-// }
-
-// // หน้าให้กรอก OTP (รับ ?phone=xxx มาแสดง)
-// app.get("/auth/otp", (req, res) => {
-//   const phone = (req.query.phone as string) || "";
-//   res.render("otp", { phone, error: null, action: "/auth/verify-otp", resendAction: "/auth/resend-otp" });
-// });
-
-// // กด “ยืนยัน” OTP
-// app.post("/auth/verify-otp", (req, res) => {
-//   const { otp, phone } = req.body as { otp?: string; phone?: string };
-
-//   if (!phone) {
-//     return res.status(400).render("otp", { phone: "", error: "ไม่พบเบอร์โทร", action: "/auth/verify-otp", resendAction: "/auth/resend-otp" });
-//   }
-//   if (!otp || otp.length !== 6) {
-//     return res.status(400).render("otp", { phone, error: "กรุณากรอกรหัสให้ครบ 6 หลัก", action: "/auth/verify-otp", resendAction: "/auth/resend-otp" });
-//   }
-
-//   if (!verifyOTP(phone, otp)) {
-//     return res.status(401).render("otp", { phone, error: "รหัสไม่ถูกต้อง หรือหมดอายุ", action: "/auth/verify-otp", resendAction: "/auth/resend-otp" });
-//   }
-
-//   // ✅ ผ่านแล้ว: ใส่อะไรก็ได้ เช่น mark ว่า verified
-//   (req.session as any).otpVerified = true;
-//   (req.session as any).phone = phone;
-
-//   // ล้าง OTP ที่ใช้แล้ว (ไม่บังคับ แต่แนะนำ)
-//   otpStore.delete(phone);
-
-//   // ไปหน้าไหนต่อก็ได้ เช่น /dashboard
-//   return res.redirect("/dashboard");
-// });
-
-// // ปุ่ม “ส่งรหัสใหม่”
-// app.post("/auth/resend-otp", (req, res) => {
-//   const { phone } = req.body as { phone?: string };
-
-//   if (!phone) return res.status(400).json({ ok: false, message: "ไม่พบเบอร์โทร" });
-
-//   const code = generateOTP(6);
-//   setOTP(phone, code, 300); // อายุ 5 นาที
-
-//   // TODO: ส่ง SMS จริง (เช่น Firebase/บริการ SMS)
-//   console.log(`[DEV] ส่ง OTP ให้ ${phone}: ${code}`);
-
-//   return res.json({ ok: true });
-// });
