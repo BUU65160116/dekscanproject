@@ -7,6 +7,9 @@
 // 3) upsertDailyCredit()           → สร้าง/อัปเดตรายการใน warp_daily_credit
 // 4) getCreditsForToday()          → อ่านเครดิตของวันนี้ (ไม่มีให้คำนวณแล้ว upsert ให้เลย)
 // 5) consumeOneCredit()            → ใช้สิทธิ์ 1 ครั้ง + บันทึกเข้าคิว warp_queue (เริ่มต้นเป็น 'queued')
+// 6) getCurrentShowing/getNextQueued/markShowing/markDone → ตัวประมวลผลคิวหน้าจอใหญ่
+// 7) listActiveTableNosFromOdoo/recalcAllTablesFromOdoo   → เครื่องมือรีคาลก์เป็นชุด
+// 8) recalcAndGetLeft()            → ⭐ ใช้ “กดปุ่มเช็คสิทธิ์” แล้วรีคาลก์จาก Odoo ทันที (อันนี้คือของใหม่)
 // ------------------------------------------------------------
 
 import { pool } from "./db";
@@ -18,7 +21,7 @@ import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 dayjs.extend(tz);
 
-const RATE = Number(process.env.WARP_PER_CREDIT || 250);   // ✅ ชื่อ ENV ที่ถูกต้อง
+const RATE = Number(process.env.WARP_PER_CREDIT || 250);   //  ENV ที่ใช้จริง
 const TZ   = process.env.APP_TZ || "Asia/Bangkok";
 
 /* -----------------------------------------------------------
@@ -149,10 +152,10 @@ export async function consumeOneCredit(
     conn.release();
   }
 }
+
 /* -----------------------------------------------------------
-   6) เพิ่มตัวประมวลผลใน service
+   6) ตัวประมวลผลคิวแสดงหน้าจอใหญ่
 ----------------------------------------------------------- */
-// ดึงรายการที่กำลังแสดงอยู่ 1 รายการ (ถ้ามี)
 export async function getCurrentShowing(){
   const [rows]: any = await pool.query(
     `SELECT * FROM warp_queue WHERE Status='showing' ORDER BY StartsAt DESC LIMIT 1`
@@ -160,7 +163,6 @@ export async function getCurrentShowing(){
   return rows[0] || null;
 }
 
-// ดึงรายการถัดไปในคิว (queued) 1 รายการ
 export async function getNextQueued(){
   const [rows]: any = await pool.query(
     `SELECT * FROM warp_queue WHERE Status='queued' ORDER BY QueueID ASC LIMIT 1`
@@ -168,7 +170,6 @@ export async function getNextQueued(){
   return rows[0] || null;
 }
 
-// เปลี่ยนสถานะเป็นกำลังแสดง 15 วิ
 export async function markShowing(qid: number, duration = 15){
   await pool.query(
     `UPDATE warp_queue
@@ -178,7 +179,6 @@ export async function markShowing(qid: number, duration = 15){
   );
 }
 
-// ปิดรายการที่จบแล้ว
 export async function markDone(qid: number){
   await pool.query(
     `UPDATE warp_queue SET Status='done', UpdatedAt=NOW() WHERE QueueID=?`,
@@ -186,7 +186,9 @@ export async function markDone(qid: number){
   );
 }
 
-// ดึงหมายเลขโต๊ะที่ยัง active จาก Odoo (ไม่ซ้ำ)
+/* -----------------------------------------------------------
+   7) เครื่องมือรีคาลก์เป็นชุด (ยังคงไว้ใช้อนาคต/ฝั่งแอดมิน)
+----------------------------------------------------------- */
 export async function listActiveTableNosFromOdoo(): Promise<number[]> {
   const orders = await fetchUnpaidOrders(500); // ใช้ของเดิม
   const set = new Set<number>();
@@ -196,7 +198,6 @@ export async function listActiveTableNosFromOdoo(): Promise<number[]> {
   return Array.from(set);
 }
 
-// รันรีคาลก์สิทธิ์ทุกโต๊ะจาก Odoo → อัปเดต warp_daily_credit
 export async function recalcAllTablesFromOdoo(): Promise<{ updated: number; skipped: number }> {
   const tableNos = await listActiveTableNosFromOdoo();
   const bizDate = getBizDate();
@@ -212,4 +213,25 @@ export async function recalcAllTablesFromOdoo(): Promise<{ updated: number; skip
     }
   }
   return { updated, skipped };
+}
+
+/* -----------------------------------------------------------
+   8) ⭐ ใช้ตอน "ลูกค้ากดเช็คสิทธิ์" → รีคาลก์จาก Odoo แล้วย้อนผลทันที
+   - ไม่ต้องพึ่ง scheduler อีกต่อไป
+----------------------------------------------------------- */
+export async function recalcAndGetLeft(tableNo: number) {
+  const bizDate = getBizDate();
+  const total   = await calcTotalCreditsFromOdoo(tableNo);
+  await upsertDailyCredit(tableNo, bizDate, total);
+
+  const [rows]: any = await pool.query(
+    `SELECT CreditsTotal AS total, CreditsUsed AS used
+       FROM warp_daily_credit
+      WHERE TableID = ? AND ForDate = ?
+      LIMIT 1`,
+    [tableNo, bizDate]
+  );
+
+  const used = rows?.[0]?.used ?? 0;
+  return { total, used, left: Math.max(total - used, 0) };
 }

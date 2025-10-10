@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { requireAuth } from "../middlewares/auth";
-import { getCreditsForToday, consumeOneCredit } from "../services/warp.service";
+import {
+  getCreditsForToday,
+  consumeOneCredit,
+  recalcAndGetLeft, // ⭐ เพิ่ม: สำหรับเช็คสิทธิ์แบบรีคาลก์ทันที
+} from "../services/warp.service";
 
 const router = Router();
 
@@ -31,7 +35,7 @@ function validDataImage(dataUrl?: string | null) {
 }
 
 /** หน้า UI ลูกค้า */
-router.get("/warp", requireAuth, async (req, res) => {
+router.get("/warp", requireAuth, async (_req, res) => {
   res.render("warp", { title: "แจกวาป" });
 });
 
@@ -39,14 +43,18 @@ router.get("/warp", requireAuth, async (req, res) => {
  * GET /warp/credits
  * - ต้องล็อกอิน
  * - ใช้ tableId จาก session เท่านั้น
- * - คืนเครดิตของ "โต๊ะนี้" วันนี้
+ * - ถ้ามี query ?recalc=1 → จะรีคาลก์จาก Odoo ก่อนแล้วค่อยคืนค่า (⭐ ของใหม่)
  */
 router.get("/warp/credits", requireAuth, async (req, res) => {
   try {
     const tableId = req.session.tableId as number | undefined;
     if (!tableId) return res.status(400).json({ ok: false, error: "no-table-in-session" });
 
-    const credits = await getCreditsForToday(tableId);
+    const doRecalc = String(req.query.recalc || "") === "1";
+    const credits = doRecalc
+      ? await recalcAndGetLeft(tableId)  // ⭐ รีคาลก์ครั้งเดียวตามคำสั่งผู้ใช้
+      : await getCreditsForToday(tableId);
+
     return res.json({ ok: true, data: credits });
   } catch (err: any) {
     return res.status(500).json({ ok: false, error: err?.message || "error" });

@@ -210,18 +210,28 @@
       reader.readAsDataURL(f);
     });
 
-    // ดึงเครดิตคงเหลือ
+    // ดึงเครดิตคงเหลือ (⭐ ปรับให้มี delay 3 วิ + รีคาลก์จากเซิร์ฟเวอร์)
     async function refreshCredits(){
       elStatus.textContent = 'กำลังเช็คสิทธิ์...';
+      elCheck.disabled = true;
+      elSend.disabled  = true;
+
       try{
-        const r = await fetch('/warp/credits');
+        // หน่วง ~3 วิ ให้ผู้ใช้รู้สึกว่ากำลังอัปเดตจริง
+        await new Promise(r => setTimeout(r, 3000));
+
+        // ขอรีคาลก์จาก Odoo แล้วคืนค่า (ใช้ ?recalc=1)
+        const r = await fetch('/warp/credits?recalc=1');
         const j = await r.json();
         if(!j.ok) throw new Error(j.error || 'error');
         elLeft.textContent = j.data.left;
         elStatus.innerHTML = '<span class="ok">อัปเดตสิทธิ์ล่าสุดแล้ว</span>';
-        elSend.disabled = (j.data.left <= 0);
       }catch(err){
         elStatus.innerHTML = '<span class="err">เช็คสิทธิ์ไม่สำเร็จ: '+ esc(err.message||err) +'</span>';
+      }finally{
+        const left = Number(elLeft.textContent || 0);
+        elSend.disabled  = (left <= 0);
+        elCheck.disabled = false;
       }
     }
 
@@ -266,7 +276,7 @@
     elCheck.addEventListener('click', refreshCredits);
     elSend.addEventListener('click', submitWarp);
 
-    // เริ่มต้น
+    // เริ่มต้น: แสดงจำนวนสิทธิ์ล่าสุดด้วยการรีคาลก์ครั้งแรก (ถ้าไม่ต้องการ ให้คอมเมนต์)
     refreshCredits();
   </script>
 </body>
