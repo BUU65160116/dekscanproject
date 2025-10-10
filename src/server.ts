@@ -98,26 +98,26 @@ app.use("/chat", chatRouter);
 app.use("/", publicRoutes); // หน้า public (login/register)
 
 
-// ───────── Scheduler: Recalc warp credits from Odoo ─────────
-const RECALC_MIN = Math.max(0, Number(process.env.WARP_RECALC_MINUTES || "1")); // 0 = ปิด
-if (RECALC_MIN > 0) {
-  let isRecalcRunning = false;
-  setInterval(async () => {
-    if (isRecalcRunning) return;
-    isRecalcRunning = true;
-    try {
-      const { updated, skipped } = await recalcAllTablesFromOdoo();
-      console.log(`[warp/recalc] updated=${updated} skipped=${skipped}`);
-    } catch (e) {
-      console.error("[warp/recalc] error:", e);
-    } finally {
-      isRecalcRunning = false;
-    }
-  }, RECALC_MIN * 60 * 1000);
-  console.log(`[warp/recalc] scheduler enabled: every ${RECALC_MIN} minute(s)`);
-} else {
-  console.log("[warp/recalc] scheduler disabled");
-}
+// // ───────── Scheduler: Recalc warp credits from Odoo ─────────
+// const RECALC_MIN = Math.max(0, Number(process.env.WARP_RECALC_MINUTES || "0")); // 0 = ปิด
+// if (RECALC_MIN > 0) {
+//   let isRecalcRunning = false;
+//   setInterval(async () => {
+//     if (isRecalcRunning) return;
+//     isRecalcRunning = true;
+//     try {
+//       const { updated, skipped } = await recalcAllTablesFromOdoo();
+//       console.log(`[warp/recalc] updated=${updated} skipped=${skipped}`);
+//     } catch (e) {
+//       console.error("[warp/recalc] error:", e);
+//     } finally {
+//       isRecalcRunning = false;
+//     }
+//   }, RECALC_MIN * 60 * 1000);
+//   console.log(`[warp/recalc] scheduler enabled: every ${RECALC_MIN} minute(s)`);
+// } else {
+//   console.log("[warp/recalc] scheduler disabled");
+// }
 
 
 

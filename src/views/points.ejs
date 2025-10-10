@@ -1,10 +1,67 @@
 <!DOCTYPE html>
 <html lang="th">
-<head><meta charset="utf-8"><title>รายละเอียดแต้ม</title></head>
-<body style="font-family:system-ui;padding:16px;">
+<head>
+  <meta charset="utf-8"><title>รายละเอียดแต้ม</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, sans-serif; padding:16px; }
+    .chip { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; }
+    .ok { background:#e6ffed; color:#067d3c; border:1px solid #b5efc8; }
+    .warn { background:#fff0f0; color:#b00020; border:1px solid #ffd6d6; }
+    table { width:100%; border-collapse:collapse; margin-top:12px;}
+    th, td { padding:8px; border-bottom:1px solid #eee; text-align:left; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; }
+    .btn { display:inline-block; padding:10px 14px; border-radius:10px; border:1px solid #ccc; text-decoration:none; }
+    .btn-success { background:#0a7; color:#fff; border-color:#0a7; }
+  </style>
+</head>
+<body>
   <h2>รายละเอียดแต้ม</h2>
   <p>สวัสดี <strong><%= user.Name %></strong> (เบอร์ <%= user.PhoneNumber %>)</p>
-  <p>หน้านี้จะโชว์ประวัติแต้มแบบละเอียด (ฟิลเตอร์/ดูรายเดือน/แลกของ) — <em>จะทำในสเตปถัดไป</em></p>
-  <p><a href="/home">← กลับหน้า Home</a></p>
+
+  <p>
+    แต้มคงเหลือ: <strong style="font-size:20px;"><%= points %></strong>
+    <% if (checkedInToday) { %>
+      <span class="chip ok">เช็คอินวันนี้แล้ว (+1)</span>
+    <% } else { %>
+      <span class="chip warn">ยังไม่ได้เช็คอินวันนี้</span>
+    <% } %>
+  </p>
+
+  <% if (points >= 10) { %>
+    <form method="POST" action="/redeem" onsubmit="return confirm('ยืนยันแลก 10 แต้ม?');">
+      <button type="submit" class="btn btn-success">แลกของรางวัล (ใช้ 10 แต้ม)</button>
+    </form>
+  <% } %>
+
+  <h3>ประวัติการแลก 5 รายการล่าสุด</h3>
+  <% if (redeemLogs && redeemLogs.length) { %>
+    <table>
+      <thead>
+        <tr>
+          <th>วันที่</th>
+          <th>เวลา</th>
+          <th>ของที่ได้</th>
+          <th>แต้มที่หัก</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% redeemLogs.forEach(item => { %>
+          <tr>
+            <td><%= new Date(item.CreatedAt).toLocaleDateString() %></td>
+            <td><%= new Date(item.CreatedAt).toLocaleTimeString() %></td>
+            <td>ส่วนลด 50 บาท / เครื่องดื่ม 1 แก้ว</td>
+            <td>-10</td> <!-- ✅ แสดง -10 เสมอ แม้ Points ในแถวจะเป็น -9 -->
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p>ยังไม่มีประวัติการแลก</p>
+  <% } %>
+
+  <div class="row">
+    <a class="btn" href="/home">← กลับหน้า Home</a>
+  </div>
 </body>
 </html>

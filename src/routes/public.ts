@@ -1,5 +1,3 @@
-// src/routes/public.ts
-// [refactor-mapping-only] เหลือแค่แม็ปเส้นทาง → controller
 import { Router } from "express";
 import { showLogin, submitLogin, showRegister, submitRegister } from "../controllers/user.controller";
 import { requireAuth } from "../middlewares/auth";
@@ -10,6 +8,8 @@ import {
   showPointsPage,
   showWarpPage,
   logout,
+  // === [POINTS FEATURE] เพิ่ม controller สำหรับแลกแต้ม ===
+  redeemReward,
 } from "../controllers/public.controller";
 
 const router = Router();
@@ -20,10 +20,13 @@ router.post("/login", submitLogin);
 router.get("/register", showRegister);
 router.post("/register", submitRegister);
 
-// Home / Points / Warp / Logout (ย้ายไป controller)
+// Home / Points / Warp / Logout (คงเดิม)
 router.get("/home", showHome);
 router.get("/points", requireAuth, showPointsPage);
 router.get("/warp", requireAuth, showWarpPage);
 router.get("/logout", logout);
+
+// === [POINTS FEATURE] เส้นทางแลกแต้ม (POST /redeem) ===
+router.post("/redeem", requireAuth, redeemReward);
 
 export default router;
