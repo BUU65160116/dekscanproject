@@ -3,7 +3,7 @@ import { requireAuth } from "../middlewares/auth";
 import {
   getCreditsForToday,
   consumeOneCredit,
-  recalcAndGetLeft, // ⭐ เพิ่ม: สำหรับเช็คสิทธิ์แบบรีคาลก์ทันที
+  recalcAndGetLeft, //   สำหรับเช็คสิทธิ์แบบรีคาลก์ทันที
 } from "../services/warp.service";
 
 const router = Router();
@@ -43,7 +43,7 @@ router.get("/warp", requireAuth, async (_req, res) => {
  * GET /warp/credits
  * - ต้องล็อกอิน
  * - ใช้ tableId จาก session เท่านั้น
- * - ถ้ามี query ?recalc=1 → จะรีคาลก์จาก Odoo ก่อนแล้วค่อยคืนค่า (⭐ ของใหม่)
+ * - ถ้ามี query ?recalc=1 → จะรีคาลก์จาก Odoo ก่อนแล้วค่อยคืนค่า ( ของใหม่)
  */
 router.get("/warp/credits", requireAuth, async (req, res) => {
   try {

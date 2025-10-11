@@ -9,7 +9,7 @@
 // 5) consumeOneCredit()            → ใช้สิทธิ์ 1 ครั้ง + บันทึกเข้าคิว warp_queue (เริ่มต้นเป็น 'queued')
 // 6) getCurrentShowing/getNextQueued/markShowing/markDone → ตัวประมวลผลคิวหน้าจอใหญ่
 // 7) listActiveTableNosFromOdoo/recalcAllTablesFromOdoo   → เครื่องมือรีคาลก์เป็นชุด
-// 8) recalcAndGetLeft()            → ⭐ ใช้ “กดปุ่มเช็คสิทธิ์” แล้วรีคาลก์จาก Odoo ทันที (อันนี้คือของใหม่)
+// 8) recalcAndGetLeft()            →  ใช้ “กดปุ่มเช็คสิทธิ์” แล้วรีคาลก์จาก Odoo ทันที (อันนี้คือของใหม่)
 // ------------------------------------------------------------
 
 import { pool } from "./db";
@@ -216,7 +216,7 @@ export async function recalcAllTablesFromOdoo(): Promise<{ updated: number; skip
 }
 
 /* -----------------------------------------------------------
-   8) ⭐ ใช้ตอน "ลูกค้ากดเช็คสิทธิ์" → รีคาลก์จาก Odoo แล้วย้อนผลทันที
+   8)  ใช้ตอน "ลูกค้ากดเช็คสิทธิ์" → รีคาลก์จาก Odoo แล้วย้อนผลทันที
    - ไม่ต้องพึ่ง scheduler อีกต่อไป
 ----------------------------------------------------------- */
 export async function recalcAndGetLeft(tableNo: number) {
