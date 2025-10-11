@@ -4,112 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title><%= title || "แจกวาป" %></title>
-
-  <!-- รวมสไตล์ไว้ในไฟล์นี้เลย (ทับทั้งหน้า) -->
-  <style>
-    :root{
-      --bg:#080b12;
-      --panel:#121826;
-      --panel-2:#161d2e;
-      --primary:#9b5cff;
-      --primary-2:#6a39ff;
-      --text:#e7e9ee;
-      --muted:#9aa3b2;
-      --ok:#18c964;
-      --err:#ff4d6d;
-      --ring:0 0 0 3px rgba(155,92,255,.25);
-      --shadow:0 10px 40px rgba(155,92,255,.25),0 2px 16px rgba(0,0,0,.5);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; color:var(--text);
-      background:radial-gradient(1000px 500px at 50% -10%,rgba(155,92,255,.15),transparent 60%),var(--bg);
-      font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Thai",sans-serif;
-    }
-    .wrap{max-width:940px;margin:48px auto;padding:0 16px}
-
-    /* หัวเรื่อง */
-    .hero{text-align:center;margin-bottom:20px}
-    .hero h1{
-      font-size:40px;margin:0 0 8px;color:#c9b6ff;
-      text-shadow:0 0 12px rgba(155,92,255,.8),0 0 25px rgba(155,92,255,.4)
-    }
-    .sub{color:var(--muted);font-size:15px}
-
-    /* แถบเครดิต + ปุ่มเช็คสิทธิ์ */
-    .creditbar{
-      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
-      margin:20px 0 26px;
-      background:linear-gradient(180deg,var(--panel-2),var(--panel));
-      border:1px solid #272f4d; border-radius:14px; padding:12px 16px;
-      box-shadow:0 0 15px rgba(155,92,255,.25);
-      justify-content:center;
-    }
-    .credits{
-      font-weight:600; color:#cfe0ff;
-    }
-    .credits strong{
-      font-weight:800; color:#fff; background:rgba(155,92,255,.22);
-      padding:3px 10px; border-radius:8px;
-      box-shadow:inset 0 0 10px rgba(155,92,255,.35);
-      font-variant-numeric:tabular-nums;
-    }
-    .btn{
-      appearance:none; border:0; cursor:pointer; user-select:none;
-      padding:10px 16px; border-radius:12px; font-weight:700; letter-spacing:.2px;
-      transition:.15s all;
-    }
-    .btn:focus{outline:none; box-shadow:var(--ring)}
-    .btn:hover:not(:disabled){transform:translateY(-2px)}
-    .btn:disabled{opacity:.55; cursor:not-allowed}
-    .btn-outline{background:transparent; color:#e9dcff; border:1px solid rgba(155,92,255,.6)}
-    .btn-primary{background:linear-gradient(180deg,var(--primary),var(--primary-2)); color:#fff; box-shadow:var(--shadow)}
-    .status-inline{font-size:15px; font-weight:600}
-    .status-inline .ok{color:var(--ok)}
-    .status-inline .err{color:var(--err)}
-
-    /* การ์ดฟอร์ม */
-    .card{
-      background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01)),var(--panel);
-      border:1px solid #1e2742; border-radius:16px; padding:20px 18px;
-      box-shadow:0 12px 26px rgba(0,0,0,.45);
-    }
-    .hint{color:var(--muted); text-align:center; margin:0 0 14px}
-    .field{margin:14px 0}
-    label{display:block; color:#c8d0e3; margin-bottom:8px; font-weight:600}
-    input[type="text"], input[type="file"]{
-      width:100%; border-radius:12px; border:1px solid #2a3352;
-      background:#0f1422; color:#fff; padding:12px 14px; outline:none;
-    }
-    input[type="text"]:focus{box-shadow:var(--ring); border-color:#4f5aa7}
-    .count{ text-align:right; color:var(--muted); font-size:13px; margin-top:6px }
-
-    /* พรีวิวรูป */
-    .preview{
-      position:relative; margin-top:14px; border-radius:14px; overflow:hidden;
-      background:#0f1422; border:1px dashed #33406b;
-    }
-    .preview canvas{display:block; width:100%; height:auto}
-
-    /* ปุ่มส่ง */
-    .actions{ display:flex; gap:12px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
-    .status{ margin-top:12px; text-align:center }
-    .ok{ color:var(--ok) } .err{ color:var(--err) }
-
-    .back{ text-align:center; margin:16px 0 0 }
-    .back a{ color:#a9baff; text-decoration:none }
-    .back a:hover{ text-decoration:underline }
-  </style>
+  <link rel="stylesheet" href="/warp.css" />
+  <!-- ไม่มี overlay/loader เพิ่มเติม -->
 </head>
+
 <body>
   <div class="wrap">
     <header class="hero">
       <h1>แจกวาป</h1>
-      
     </header>
 
-    <!-- สิทธิ์คงเหลือ + เช็คสิทธิ์ + สถานะ (บรรทัดเดียว) -->
+    <!-- ===== แถบเครดิต + ปุ่มเช็คสิทธิ์ ===== -->
     <div class="creditbar">
       <div class="credits">สิทธิ์คงเหลือ: <strong id="left">-</strong></div>
       <button id="btnCheck" class="btn btn-outline">เช็คสิทธิ์</button>
@@ -117,6 +22,7 @@
       <div class="sub">กรุณา <b>กดเช็คสิทธิ์ก่อนส่ง</b> เพื่ออัปเดตสิทธิ์ล่าสุด</div>
     </div>
 
+    <!-- ===== ฟอร์มส่งวาป ===== -->
     <section class="card">
       <p class="hint">เลือกภาพจากมือถือ แล้วพิมพ์ข้อความบนรูป (สูงสุด 20 ตัวอักษร)</p>
 
@@ -132,30 +38,32 @@
         <div class="count"><span id="count">0</span>/20</div>
       </div>
 
-      <!-- พรีวิว -->
+      <!-- พรีวิวรูป -->
       <div id="preview" class="preview" style="display:none">
         <canvas id="canvas"></canvas>
       </div>
 
-      <!-- ปุ่มส่ง (เช็คสิทธิ์ก่อนถึงจะกดได้) -->
+      <!-- ปุ่มส่ง -->
       <div class="actions">
         <button id="btnSend" class="btn btn-primary" disabled>ส่งวาป</button>
       </div>
 
-      <!-- สถานะหลัก (สำหรับผลส่งวาป) -->
+      <!-- สถานะหลัก -->
       <div id="status" class="status"></div>
     </section>
 
+    <!-- ===== ปุ่มกลับหน้า Home ===== -->
     <p class="back">
-  <a href="/home" class="btn-back">
-    <span class="icon">←</span> กลับหน้า Home
-  </a>
-</p>
-
+      <a href="/home" class="btn-back">
+        <span class="icon">←</span> กลับหน้า Home
+      </a>
+    </p>
   </div>
 
   <script>
-    // ===== DOM =====
+    /* ============================
+       DOM refs
+    ============================ */
     const elLeft    = document.getElementById('left');
     const elMsg     = document.getElementById('msg');
     const elCount   = document.getElementById('count');
@@ -170,10 +78,12 @@
 
     const esc = (s)=> (s||"").toString().replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
-    let baseImage = null;      // <img> ดิบ
-    let composedDataURL = null; // dataURL หลังซ้อนข้อความ
+    let baseImage = null;
+    let composedDataURL = null;
 
-    // ตัดบรรทัดข้อความตามความกว้าง
+    /* ============================
+       helper: ตัดบรรทัดข้อความ
+    ============================ */
     function breakLines(context, text, maxWidth){
       const words=(text||"").split(/\s+/).filter(Boolean);
       const lines=[]; let line="";
@@ -183,9 +93,12 @@
         else{ if(line) lines.push(line); line=w; }
       }
       if(line) lines.push(line);
-      return lines.length? lines : [""];
+      return lines.length? lines : [""]; 
     }
-    // วาดกล่องโค้ง
+
+    /* ============================
+       helper: วาดกล่องโค้ง
+    ============================ */
     function roundRect(ctx,x,y,w,h,r){
       const rr=Math.min(r,w/2,h/2);
       ctx.beginPath();
@@ -196,60 +109,92 @@
       ctx.arcTo(x,  y,  x+w,y,   rr);
       ctx.closePath();
     }
-    // วาดภาพ + ข้อความลง canvas
+
+    /* ============================
+       วาดข้อความบนรูป (ชัดขึ้น)
+    ============================ */
     function drawToCanvasWithText(img,text){
-      const MAX_W=1280, ratio=img.width>MAX_W? (MAX_W/img.width):1;
-      const w=Math.round(img.width*ratio), h=Math.round(img.height*ratio);
-      elCanvas.width=w; elCanvas.height=h;
-      ctx.clearRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
+      const MAX_W = 1440;
+      const ratio = img.width > MAX_W ? (MAX_W / img.width) : 1;
+      const wCSS  = Math.round(img.width * ratio);
+      const hCSS  = Math.round(img.height * ratio);
+      const DPR   = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
 
-      const fontSize=Math.max(24, Math.round(w*0.045));
-      const lineHeight=Math.round(fontSize*1.25);
-      const maxWidth=Math.round(w*0.9);
-      ctx.font=`600 ${fontSize}px system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans Thai',sans-serif`;
-      ctx.textAlign="center"; ctx.textBaseline="top";
+      elCanvas.width  = Math.round(wCSS * DPR);
+      elCanvas.height = Math.round(hCSS * DPR);
+      elCanvas.style.width  = wCSS + "px";
+      elCanvas.style.height = hCSS + "px";
+      ctx.setTransform(DPR,0,0,DPR,0,0);
 
-      const lines=breakLines(ctx,text,maxWidth);
-      const startY=Math.round(h*.80 - (lines.length*lineHeight)/2);
+      ctx.clearRect(0,0,wCSS,hCSS);
+      ctx.drawImage(img, 0, 0, wCSS, hCSS);
 
-      // กล่องโปร่งหลังข้อความให้อ่านง่าย
-      const widths=lines.map(l=>ctx.measureText(l).width);
-      const boxW=Math.min(maxWidth, Math.max(...widths)+Math.round(fontSize*.8));
-      const boxH=lines.length*lineHeight + Math.round(fontSize*.6);
-      ctx.fillStyle="rgba(255,255,255,.10)";
-      roundRect(ctx,(w-boxW)/2, startY-Math.round(fontSize*.3), boxW, boxH, Math.round(fontSize*.3));
+      const fontSize   = Math.max(28, Math.round(wCSS * 0.055));
+      const lineHeight = Math.round(fontSize * 1.25);
+      const maxWidth   = Math.round(wCSS * 0.9);
+
+      ctx.font = `900 ${fontSize}px 'Noto Sans Thai', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`;
+      ctx.textAlign   = "center";
+      ctx.textBaseline= "top";
+
+      const lines  = breakLines(ctx, (text||"").trim(), maxWidth);
+      const startY = Math.round(hCSS * 0.80 - (lines.length * lineHeight) / 2);
+
+      const widths = lines.map(l => ctx.measureText(l).width);
+      const boxW   = Math.min(maxWidth, Math.max(...widths) + Math.round(fontSize * .8));
+      const boxH   = lines.length * lineHeight + Math.round(fontSize * .6);
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
+      roundRect(ctx, (wCSS - boxW)/2, startY - Math.round(fontSize*.3), boxW, boxH, Math.round(fontSize*.3));
       ctx.fill();
 
-      ctx.fillStyle="#fff";
-      ctx.shadowColor="rgba(155,92,255,.65)";
-      ctx.shadowBlur=Math.round(fontSize/5);
-      lines.forEach((l,i)=>ctx.fillText(l, Math.round(w/2), startY+i*lineHeight));
+      ctx.fillStyle   = "#fff";
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth   = Math.max(3, Math.round(fontSize * 0.06));
+      ctx.shadowColor = "rgba(0,0,0,0.9)";
+      ctx.shadowBlur  = Math.round(fontSize / 4);
 
-      composedDataURL=elCanvas.toDataURL("image/jpeg", .82);
+      lines.forEach((l,i)=>{
+        const y = startY + i*lineHeight;
+        ctx.strokeText(l, Math.round(wCSS/2), y);
+        ctx.fillText  (l, Math.round(wCSS/2), y);
+      });
+
+      composedDataURL = elCanvas.toDataURL("image/jpeg", .85);
     }
 
-    // นับตัวอักษร + รีเฟรชพรีวิว
+    /* ============================
+       input: นับตัวอักษร + อัปเดตพรีวิว
+    ============================ */
     elMsg.addEventListener('input', ()=>{
       elCount.textContent = elMsg.value.length;
-      if(baseImage) drawToCanvasWithText(baseImage, elMsg.value.trim());
+      if(baseImage) drawToCanvasWithText(baseImage, elMsg.value);
     });
 
-    // อัปโหลดรูป → แสดงพรีวิว
+    /* ============================
+       upload: โหลดรูป → พรีวิว
+    ============================ */
     elFile.addEventListener('change', e=>{
-      const f=e.target.files && e.target.files[0];
+      const f = e.target.files && e.target.files[0];
       if(!f){ baseImage=null; composedDataURL=null; elPreview.style.display='none'; return; }
-      if(f.size>20*1024*1024){ elStatus.textContent=''; elStatusInline.innerHTML='<span class="err">ไฟล์ใหญ่เกินไป (&gt;20MB)</span>'; elFile.value=''; return; }
+      if(f.size > 20*1024*1024){
+        elStatus.textContent='';
+        elStatusInline.innerHTML='<span class="err">ไฟล์ใหญ่เกินไป (&gt;20MB)</span>';
+        elFile.value='';
+        return;
+      }
       const reader=new FileReader();
       reader.onload=()=>{
         const img=new Image();
-        img.onload=()=>{ baseImage=img; elPreview.style.display='block'; drawToCanvasWithText(img, elMsg.value.trim()); };
+        img.onload=()=>{ baseImage=img; elPreview.style.display='block'; drawToCanvasWithText(img, elMsg.value); };
         img.onerror=()=>{ elStatusInline.innerHTML='<span class="err">โหลดรูปไม่สำเร็จ</span>'; };
         img.src=reader.result;
       };
       reader.readAsDataURL(f);
     });
 
-    // เช็คสิทธิ์ (บังคับ flow: ต้องกดก่อน)
+    /* ============================
+       เช็คสิทธิ์ (ต้องกดก่อนส่ง)
+    ============================ */
     async function refreshCredits(){
       elStatusInline.textContent = 'กำลังเช็คสิทธิ์...';
       elCheck.disabled = true;
@@ -269,7 +214,9 @@
       }
     }
 
-    // ส่งวาป
+    /* ============================
+       ส่งวาป (เวอร์ชันเดิม ไม่มี overlay)
+    ============================ */
     async function submitWarp(){
       const left = Number(elLeft.textContent || NaN);
       if(Number.isNaN(left)){
@@ -280,15 +227,17 @@
         elStatusInline.innerHTML = '<span class="err">สิทธิ์หมด กรุณาเช็คอีกครั้ง</span>';
         return;
       }
-      const message = elMsg.value.trim();
+      const message = (elMsg.value || '').trim();
       if(!message){
         elStatus.innerHTML = '<span class="err">กรุณากรอกข้อความ</span>';
         elMsg.focus();
         return;
       }
 
+      // แสดงสถานะแบบเดิม (ไม่ใช้ overlay)
       elSend.disabled = true;
       elStatus.textContent = 'กำลังส่ง...';
+
       try{
         const r = await fetch('/warp/use', {
           method:'POST',
@@ -299,25 +248,22 @@
         if(!j.ok) throw new Error(j.error || 'ส่งไม่สำเร็จ');
 
         elLeft.textContent = j.left;
-        elStatus.innerHTML = '<span class="ok">ส่งสำเร็จ! คิว #'+ j.queueId +' | สิทธิ์คงเหลือ: '+ j.left +'</span>';
+        elStatus.innerHTML = `<span class="ok">สิทธิ์คงเหลือ: ${j.left}</span>`;
 
         // เคลียร์ฟอร์ม
         elMsg.value=''; elCount.textContent=0; elFile.value='';
         baseImage=null; composedDataURL=null; elPreview.style.display='none';
       }catch(err){
-        elStatus.innerHTML = '<span class="err">'+ esc(err.message||err) +'</span>';
+        elStatus.innerHTML = `<span class="err">${esc(err.message||err)}</span>`;
       }finally{
         const newLeft = Number(elLeft.textContent || 0);
         elSend.disabled = !(newLeft > 0);
       }
     }
 
-    // bind ปุ่ม
+    // ===== ผูกปุ่ม =====
     elCheck.addEventListener('click', refreshCredits);
     elSend.addEventListener('click', submitWarp);
-
-    // ไม่เช็คอัตโนมัติ — ให้ผู้ใช้กดเองเพื่อเน้น flow
-    // refreshCredits();
   </script>
 </body>
 </html>

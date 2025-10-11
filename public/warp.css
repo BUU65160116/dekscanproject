@@ -1,167 +1,100 @@
-/* ===== warp- (update) ===== */
-
 :root{
-  --bg:#080b12;
-  --panel:#121826;
-  --panel-2:#161d2e;
-  --primary:#9b5cff;
-  --primary-2:#6a39ff;
-  --text:#e7e9ee;
-  --muted:#9aa3b2;
-  --ok:#18c964;
-  --err:#ff4d6d;
-  --ring:0 0 0 3px rgba(155,92,255,.25);
-  --shadow:0 10px 40px rgba(155,92,255,.25),0 2px 16px rgba(0,0,0,.5);
+      --bg:#080b12;
+      --panel:#121826;
+      --panel-2:#161d2e;
+      --primary:#9b5cff;
+      --primary-2:#6a39ff;
+      --text:#e7e9ee;
+      --muted:#9aa3b2;
+      --ok:#18c964;
+      --err:#ff4d6d;
+      --ring:0 0 0 3px rgba(155,92,255,.25);
+      --shadow:0 10px 40px rgba(155,92,255,.25),0 2px 16px rgba(0,0,0,.5);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--text);
+      background:radial-gradient(1000px 500px at 50% -10%,rgba(155,92,255,.15),transparent 60%),var(--bg);
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Thai",sans-serif;
+    }
+    .wrap{max-width:940px;margin:48px auto;padding:0 16px}
+
+    /* หัวเรื่อง */
+    .hero{text-align:center;margin-bottom:20px}
+    .hero h1{
+      font-size:40px;margin:0 0 8px;color:#c9b6ff;
+      text-shadow:0 0 12px rgba(155,92,255,.8),0 0 25px rgba(155,92,255,.4)
+    }
+    .sub{color:var(--muted);font-size:15px}
+
+    /* แถบเครดิต + ปุ่มเช็คสิทธิ์ */
+    .creditbar{
+      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+      margin:20px 0 26px;
+      background:linear-gradient(180deg,var(--panel-2),var(--panel));
+      border:1px solid #272f4d; border-radius:14px; padding:12px 16px;
+      box-shadow:0 0 15px rgba(155,92,255,.25);
+      justify-content:center;
+    }
+    .credits{
+      font-weight:600; color:#cfe0ff;
+    }
+    .credits strong{
+      font-weight:800; color:#fff; background:rgba(155,92,255,.22);
+      padding:3px 10px; border-radius:8px;
+      box-shadow:inset 0 0 10px rgba(155,92,255,.35);
+      font-variant-numeric:tabular-nums;
+    }
+    .btn{
+      appearance:none; border:0; cursor:pointer; user-select:none;
+      padding:10px 16px; border-radius:12px; font-weight:700; letter-spacing:.2px;
+      transition:.15s all;
+    }
+    .btn:focus{outline:none; box-shadow:var(--ring)}
+    .btn:hover:not(:disabled){transform:translateY(-2px)}
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+    .btn-outline{background:transparent; color:#e9dcff; border:1px solid rgba(155,92,255,.6)}
+    .btn-primary{background:linear-gradient(180deg,var(--primary),var(--primary-2)); color:#fff; box-shadow:var(--shadow)}
+    .status-inline{font-size:15px; font-weight:600}
+    .status-inline .ok{color:var(--ok)}
+    .status-inline .err{color:var(--err)}
+
+    /* การ์ดฟอร์ม */
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01)),var(--panel);
+      border:1px solid #1e2742; border-radius:16px; padding:20px 18px;
+      box-shadow:0 12px 26px rgba(0,0,0,.45);
+    }
+    .hint{color:var(--muted); text-align:center; margin:0 0 14px}
+    .field{margin:14px 0}
+    label{display:block; color:#c8d0e3; margin-bottom:8px; font-weight:600}
+    input[type="text"], input[type="file"]{
+      width:100%; border-radius:12px; border:1px solid #2a3352;
+      background:#0f1422; color:#fff; padding:12px 14px; outline:none;
+    }
+    input[type="text"]:focus{box-shadow:var(--ring); border-color:#4f5aa7}
+    .count{ text-align:right; color:var(--muted); font-size:13px; margin-top:6px }
+
+    /* ปรับขนาดพรีวิวรูปให้พอดี */
+.preview {
+  max-width: 360px;     /*  จำกัดความกว้างสูงสุดของพรีวิว */
+  margin: 10px auto;    /*  จัดให้อยู่กลาง */
 }
 
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  color:var(--text);
-  background:radial-gradient(1000px 500px at 50% -10%,rgba(155,92,255,.15),transparent 60%),var(--bg);
-  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Thai",sans-serif;
-}
-.wrap{max-width:940px;margin:48px auto;padding:0 16px}
-
-/* ======================== */
-.hero{text-align:center;margin-bottom:20px}
-.hero h1{
-  font-size:40px;margin:0 0 8px;
-  color:#c9b6ff;text-shadow:0 0 12px rgba(155,92,255,.8),0 0 25px rgba(155,92,255,.4)
-}
-.sub{color:var(--muted);font-size:15px}
-
-/* ===== แถบสิทธิ์ ===== */
-.credit-bar{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  flex-wrap:wrap;
-  gap:10px;
-  margin:20px 0 30px;
-  background:linear-gradient(180deg,var(--panel-2),var(--panel));
-  border:1px solid #272f4d;
-  border-radius:14px;
-  padding:14px 18px;
-  box-shadow:0 0 15px rgba(155,92,255,.25);
-}
-.credit-info{
-  font-size:18px;
-  font-weight:600;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  color:#dfe2ff;
-}
-.credit-info strong{
-  font-size:22px;
-  color:#fff;
-  padding:4px 12px;
-  border-radius:10px;
-  background:rgba(155,92,255,.25);
-  box-shadow:inset 0 0 10px rgba(155,92,255,.4);
-}
-.status-inline{
-  margin-left:12px;
-  font-weight:500;
-  font-size:15px;
-}
-.status-inline .ok{color:var(--ok)}
-.status-inline .err{color:var(--err)}
-
-/* ===== ปุ่มเช็คสิทธิ์ / ส่งวาป ===== */
-.btn{
-  appearance:none;
-  border:0;
-  cursor:pointer;
-  user-select:none;
-  padding:12px 22px;
-  border-radius:12px;
-  font-weight:700;
-  letter-spacing:.3px;
-  transition:.15s all;
-}
-.btn:focus{outline:none;box-shadow:var(--ring)}
-.btn:hover:not(:disabled){transform:translateY(-2px)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-primary{
-  background:linear-gradient(180deg,var(--primary),var(--primary-2));
-  color:#fff;
-  box-shadow:var(--shadow);
-}
-.btn-outline{
-  background:transparent;
-  color:#d9cfff;
-  border:1px solid rgba(155,92,255,.6);
-}
-.actions{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-  margin-top:12px;
+.preview canvas {
+  width: 80% !important;   /*  ย่อให้พอดีกับกล่อง */
+  height: auto !important;  /*  รักษาสัดส่วน ไม่บิดรูป */
+  border-radius: 12px;
+  display: block;
+  background: #000;
 }
 
-/* ===== การ์ดฟอร์ม ===== */
-.card{
-  background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01)),var(--panel);
-  border:1px solid #1e2742;
-  border-radius:16px;
-  padding:20px 18px;
-  box-shadow:0 12px 26px rgba(0,0,0,.45);
-}
-.hint{text-align:center;color:var(--muted);margin-bottom:14px}
-.field{margin:14px 0}
-label{display:block;color:#c8d0e3;margin-bottom:8px;font-weight:600}
-input[type="text"],input[type="file"]{
-  width:100%;
-  border-radius:12px;
-  border:1px solid #2a3352;
-  background:#0f1422;
-  color:#fff;
-  padding:12px 14px;
-  outline:none;
-}
-input[type="text"]:focus{box-shadow:var(--ring);border-color:#4f5aa7}
-.count{text-align:right;color:var(--muted);font-size:13px;margin-top:6px}
+    /* ปุ่มส่ง */
+    .actions{ display:flex; gap:12px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+    .status{ margin-top:12px; text-align:center }
+    .ok{ color:var(--ok) } .err{ color:var(--err) }
 
-/* ===== พรีวิว ===== */
-.preview{
-  position:relative;
-  margin-top:14px;
-  border-radius:14px;
-  overflow:hidden;
-  background:#0f1422;
-  border:1px dashed #33406b;
-}
-.preview canvas{display:block;width:100%;height:auto}
-
-/* ===== ข้อความสถานะหลัก ===== */
-.status{margin-top:12px;text-align:center}
-.ok{color:var(--ok)}
-.err{color:var(--err)}
-
-.back{text-align:center;margin:16px 0 0}
-.back a{color:#a9baff;text-decoration:none}
-.back a:hover{text-decoration:underline}
-/* ปุ่มกลับ Home ให้โทนเดียวกับทั้งระบบ */
-.btn-back{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:10px 14px;
-  border-radius:10px;
-  border:1px solid rgba(155,92,255,.5);
-  background:rgba(255,255,255,0.02);
-  color:#a9baff; text-decoration:none; font-weight:700;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
-  transition:.15s transform,.15s box-shadow,.15s background,.15s color;
-}
-.btn-back:hover{ transform:translateY(-1px); box-shadow: var(--ring); color:#d9e0ff; }
-.btn-back:focus{ outline:none; box-shadow: var(--ring); }
-.btn-back .icon{
-  font-weight:900; font-size:14px; line-height:1; opacity:.9;
-}
-
-/* จัดตำแหน่งแถวลิงก์กลับ */
-.back{ text-align:left; margin:16px 0 0; }
+    .back{ text-align:center; margin:16px 0 0 }
+    .back a{ color:#a9baff; text-decoration:none }
+    .back a:hover{ text-decoration:underline }

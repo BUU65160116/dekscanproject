@@ -70,7 +70,7 @@ export const submitLogin = async (req: Request, res: Response) => {
         );
       } catch (err: any) {
         if (err?.code === "ER_NO_REFERENCED_ROW_2") {
-          return res.render("login", { shop: shopCode, table: tableNumber, msg: null, error: "ไม่พบโต๊ะนี้ในระบบ กรุณาเพิ่มใน tableqr ก่อน" });
+          return res.render("login", { shop: shopCode, table: tableNumber, msg: null, error: "ไม่พบโต๊ะนี้ในระบบ กรุณาเเสกนQRที่โต๊ะของคุณ" });
         }
         throw err;
       }

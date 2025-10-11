@@ -6,28 +6,11 @@
   <meta http-equiv="Cache-Control" content="no-store" />
   <title><%= title %></title>
   <link rel="stylesheet" href="/screen.css" />
-  <style>
-    /* ป้องกันรูปหลุดเฟรม/เบี้ยว และทับข้อความ */
-    .warp-now{ position:relative; }
-    .warp-img{
-      display:block;
-      width:100%;
-      height:auto;
-      object-fit:contain;
-      background:#000;
-      border-radius: 8px;
-    }
-    .warp-msg{
-      margin-top:.5rem;
-      font-size:1.25rem;
-      line-height:1.35;
-      word-break: break-word;
-    }
-  </style>
 </head>
 <body>
   <div class="screen-wrap">
-    <header class="screen-header">
+    <!-- แถบบาร์ส่วนหัว -->
+    <header class="screen-header header-bar">
       <div class="brand">
         <span class="dot"></span>
         <h1>Chat & Warp Board</h1>
@@ -38,54 +21,53 @@
       </div>
     </header>
 
-    <main class="screen-grid">
-      <!-- คอลัมน์ซ้าย: แชท -->
-      <section class="panel">
-        <h2 class="panel-title">แชท</h2>
-        <ul id="chatList" class="list">
-          <li class="empty">ยังไม่มีข้อความแชท</li>
-        </ul>
-      </section>
+    <!-- เลย์เอาต์หลัก: ซ้ายใหญ่ (วาป) / ขวาแคบ (แชท) -->
+    <main class="screen-grid grid--show-big">
+  <!-- ซ้าย: วาป (ภาพเต็มพื้นที่) -->
+  <section class="panel panel--warp warp-stage">
+    <h2 class="panel-title sr-only">วาป</h2>
+    <ul id="warpList" class="list">
+      <li class="empty">ยังไม่มีวาป</li>
+    </ul>
+  </section>
 
-      <!-- คอลัมน์ขวา: วาป -->
-      <section class="panel">
-        <h2 class="panel-title">วาป</h2>
-        <ul id="warpList" class="list">
-          <li class="empty">ยังไม่มีวาป</li>
-        </ul>
-      </section>
-    </main>
+  <!-- ขวา: แชท (sidebar โปร่ง เลื่อนเฉพาะแชท) -->
+  <section class="panel panel--chat sidebar-chat">
+    <h2 class="panel-title sticky">แชท <span class="dot dot-red"></span></h2>
+    <ul id="chatList" class="list">
+      <li class="empty">ยังไม่มีข้อความแชท</li>
+    </ul>
+  </section>
+</main>
 
-    <footer class="screen-footer">
-      <div class="ticker" id="ticker">
-        <div class="ticker-track">
-          <span>ยินดีต้อนรับสู่ร้านของเรา • โปรดงดใช้คำหยาบและสแปม • ขอบคุณที่ให้ความร่วมมือ</span>
-          <span>ยินดีต้อนรับสู่ร้านของเรา • โปรดงดใช้คำหยาบและสแปม • ขอบคุณที่ให้ความร่วมมือ</span>
-        </div>
-      </div>
-    </footer>
+    <!-- แถบบาร์ด้านล่าง (Ticker) -->
+    <footer class="screen-footer footer-bar">
+  <div class="ticker" id="ticker">
+    <div class="ticker-track">
+      <span>ยินดีต้อนรับสู่ร้านของเรา • โปรดงดใช้คำหยาบและสแปม • ขอบคุณที่ให้ความร่วมมือ</span>
+      <span>ยินดีต้อนรับสู่ร้านของเรา • โปรดงดใช้คำหยาบและสแปม • ขอบคุณที่ให้ความร่วมมือ</span>
+    </div>
+  </div>
+</footer>
   </div>
 
   <script>
     // นาฬิกามุมขวาบน
     const elClock = document.getElementById("clock");
-    function pad(n){ return n.toString().padStart(2,"0"); }
-    function tick(){
-      const d = new Date();
-      elClock.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    }
+    const pad = n => n.toString().padStart(2,"0");
+    function tick(){ const d=new Date(); elClock.textContent=`${pad(d.getHours())}:${pad(d.getMinutes())}`; }
     setInterval(tick, 1000); tick();
   </script>
 
   <!-- Socket.IO -->
   <script src="/socket.io/socket.io.js"></script>
   <script>
+    // ====== โค้ดเดิม: แชท + วาป (ไม่เปลี่ยน) ======
     const socket = io();
     const esc = (s) => (s || "").toString().replace(/</g,"&lt;").replace(/>/g,"&gt;");
     const chatList = document.getElementById("chatList");
-    const warpList = document.getElementById("warpList");// อ้างอิงลิสต์ฝั่งวาป
+    const warpList = document.getElementById("warpList");
 
-    // โหลดประวัติแชท
     async function loadHistory(){
       try{
         const res = await fetch("/screen/history");
@@ -112,11 +94,9 @@
     }
     loadHistory();
 
-    // ข้อความใหม่ (realtime)
     socket.on("newMessage", (data) => {
       const empty = chatList.querySelector(".empty");
       if (empty) empty.remove();
-
       const li = document.createElement("li");
       li.className = "item";
       if (typeof data.chatId !== "undefined") {
@@ -130,7 +110,6 @@
       chatList.appendChild(li);
     });
 
-    // ลบข้อความเดี่ยว (realtime)
     socket.on("deleteMessage", ({ chatId }) => {
       const el = document.getElementById(`chat-${chatId}`);
       if (el) el.remove();
@@ -139,78 +118,49 @@
       }
     });
 
-    // ล้างทั้งหมด (realtime)
     socket.on("clearChat", () => {
       chatList.innerHTML = `<li class="empty">ยังไม่มีข้อความแชท</li>`;
     });
 
-     // ===== แจกวาป (ฝั่งจอใหญ่) =====
-
-   // ตรวจ/เลือก src รูปให้ปลอดภัย: รองรับ key หลายแบบ + trim + ต้องเป็น data:image/...;base64
-  function safeImgSrc(item){
-    const raw = (item.ImageURL ?? item.imageUrl ?? item.image ?? "").toString().trim();
-    if (/^data:image\/(png|jpe?g|gif|webp);base64,/i.test(raw)) return raw;
-    return "";
-  }
-
-  // แสดงวาป (preload ก่อนค่อยใส่ DOM) + มี log ให้ไล่ปัญหา
-  function renderWarpNow(item){
-    const msg   = (item.Message ?? item.message ?? "");
-    const secs  = (item.DurationSec ?? item.durationSec ?? 15);
-    const table = (item.TableID ?? item.tableId ?? "-");
-    const src   = safeImgSrc(item);
-
-    // ไม่มีรูป → ข้อความล้วน
-    if (!src) {
-      console.warn("[warp] no/invalid image, show text only", {
-        hasImage: !!(item.ImageURL || item.imageUrl || item.image),
-        len: (item.ImageURL || item.imageUrl || item.image || "").length
-      });
-      warpList.innerHTML = `
-        <li class="item warp-now">
-          <p class="warp-msg">${esc(msg)}</p>
-          <small>โต๊ะ ${table} · เหลือเวลา ~${secs}s</small>
-        </li>`;
-      return;
+    // ===== แจกวาป (ฝั่งจอใหญ่) =====
+    function safeImgSrc(item){
+      const raw = (item.ImageURL ?? item.imageUrl ?? item.image ?? "").toString().trim();
+      if (/^data:image\/(png|jpe?g|gif|webp);base64,/i.test(raw)) return raw;
+      return "";
     }
 
-    // preload รูปก่อน
-    const img = new Image();
-    img.className = "warp-img";
-    img.onload = () => {
-      warpList.innerHTML = `
-        <li class="item warp-now">
-          <img src="${src}" class="warp-img" />
-          <p class="warp-msg">${esc(msg)}</p>
-          <small>โต๊ะ ${table} · เหลือเวลา ~${secs}s</small>
-        </li>`;
-    };
-    img.onerror = (e) => {
-      console.warn("[warp] image load failed → fallback to text", { err:e, len:src.length });
-      warpList.innerHTML = `
-        <li class="item warp-now">
-          <p class="warp-msg">${esc(msg)}</p>
-          <small>โต๊ะ ${table} · เหลือเวลา ~${secs}s</small>
-        </li>`;
-    };
-    img.src = src; // เริ่มโหลด
-  }
+    function renderWarpNow(item){
+      const msg = (item.Message ?? item.message ?? "");
+      const src = safeImgSrc(item);
 
-  // realtime: ได้คิวโชว์ตอนนี้
-  socket.on("warp:now", (item) => {
-    console.debug("[warp:now]", {
-      hasImage: !!(item.ImageURL || item.imageUrl || item.image),
-      len: (item.ImageURL || item.imageUrl || item.image || "").length,
-      table: item.TableID ?? item.tableId,
-      dur: item.DurationSec ?? item.durationSec
-    });
-    renderWarpNow(item);
-  });
+      if (!src) { // ไม่มีรูป → โชว์ข้อความล้วนกลางจอ
+        warpList.innerHTML = `
+          <li class="item warp-now">
+            <p class="warp-only-text">${esc(msg)}</p>
+          </li>`;
+        return;
+      }
 
-  // realtime: จบเวลา → ล้างหน้าจอฝั่งวาป
-  socket.on("warp:done", () => {
-    warpList.innerHTML = `<li class="empty">รอคิวถัดไป...</li>`;
-  });
+      // preload รูปก่อน แล้วค่อยใส่ DOM
+      const img = new Image();
+      img.className = "warp-img";
+      img.onload = () => {
+        warpList.innerHTML = `
+          <li class="item warp-now">
+            <img src="${src}" class="warp-img" />
+          </li>`;
+      };
+      img.onerror = () => {
+        warpList.innerHTML = `
+          <li class="item warp-now">
+            <p class="warp-only-text">${esc(msg)}</p>
+          </li>`;
+      };
+      img.src = src;
+    }
+
+    socket.on("warp:now", (item) => { renderWarpNow(item); });
+    socket.on("warp:done", () => { warpList.innerHTML = `<li class="empty">รอคิวถัดไป...</li>`; });
   </script>
 </body>
 </html>

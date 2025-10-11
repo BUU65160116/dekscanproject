@@ -1,4 +1,6 @@
-/* ===== Big Screen (TV) ===== */
+/* ===============================
+   Big Screen (TV) – BASE TOKENS
+================================ */
 :root{
   --bg:#0b0f14;
   --card:#121823;
@@ -10,145 +12,155 @@
   --danger:#ff4769;
 }
 
-*{ box-sizing: border-box; }
+*{ box-sizing:border-box; }
 html,body{
   height:100%;
   margin:0;
-  font-family: system-ui, "Noto Sans Thai", Inter, Segoe UI, sans-serif;
+  font-family:system-ui,"Noto Sans Thai",Inter,Segoe UI,sans-serif;
   color:var(--text);
   background:var(--bg);
-  overflow:hidden; /* กันการ scroll ในจอทีวี */
-  cursor:none; /* ซ่อนเมาส์ */
+  overflow:hidden; /* กัน scroll ทั้งหน้า */
+  cursor:none;     /* ซ่อนเมาส์ในจอใหญ่ */
 }
 
-.screen-wrap{
-  display:flex;
-  flex-direction:column;
-  height:100%;
-  width:100%;
-  padding:16px;
-  gap:12px;
+/* ===============================
+   HEADER BAR (บน)
+================================ */
+.screen-wrap{ display:flex; flex-direction:column; height:100%; width:100%; padding:10px; gap:8px; }
+.header-bar{
+  background:#0b1530;
+  border:2px solid #2d3c7a;
+  border-radius:10px;
+  padding:6px 10px;
+  box-shadow:0 0 0 2px #001a38 inset;
 }
-
-/* Header */
-.screen-header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-}
-.brand{
-  display:flex; align-items:center; gap:12px;
-}
-.brand .dot{
-  width:14px;height:14px;border-radius:50%;
-  background:var(--accent-2); box-shadow:0 0 12px var(--accent-2);
-}
-.brand h1{
-  margin:0; font-weight:700; letter-spacing:0.4px;
-  font-size: clamp(18px, 2.4vw, 32px);
-}
+.screen-header{ display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.brand{ display:flex; align-items:center; gap:10px; }
+.brand .dot{ width:12px; height:12px; border-radius:50%; background:var(--accent-2); box-shadow:0 0 12px var(--accent-2); }
+.brand h1{ margin:0; font-weight:700; letter-spacing:.5px; font-size:clamp(18px,2.4vw,32px); }
 .status{ display:flex; align-items:center; gap:10px; }
-.pill{
-  display:inline-flex; align-items:center; justify-content:center;
-  padding:6px 10px; border-radius:999px; font-weight:600;
-  font-size: clamp(10px, 1.2vw, 14px);
-  border:1px solid var(--border); background:#0f1520; color:var(--muted);
+.pill{ display:inline-flex; align-items:center; justify-content:center; padding:6px 10px; border-radius:999px; font-weight:700; font-size:clamp(10px,1.2vw,14px); border:1px solid #2d3c7a; background:#14214c; color:#e6edff; }
+.pill.live{ color:#fff; background:linear-gradient(90deg,#ff244a,#ff7b5e); border:none; box-shadow:0 0 16px rgba(255,36,74,.25); }
+.clock{ font-variant-numeric:tabular-nums; font-size:clamp(16px,2.2vw,28px); color:#cfe1ff; }
+
+/* ===============================
+   GRID LAYOUT (ซ้ายใหญ่/ขวาแคบ)
+================================ */
+.screen-grid {
+  display: grid;
+  height: 100%;
+  grid-template-columns: minmax(0, 85%) minmax(200px, 15%);
+  gap: 8px; /* ลดช่องว่างลงนิดนึง */
 }
-.pill.live{
-  color:white; background:linear-gradient(90deg, #ff244a, #ff7b5e);
-  border:none; box-shadow:0 0 16px rgba(255,36,74,0.25);
-}
-.clock{
-  font-variant-numeric: tabular-nums;
-  font-size: clamp(16px, 2.2vw, 28px); color:#cfe1ff;
+@media (max-aspect-ratio:4/3){
+  .screen-grid{ grid-template-columns:1fr; }
 }
 
-/* Grid */
-.screen-grid{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:16px;
-  height:100%;
-}
-
-/* Panel */
-.panel{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:14px 14px 8px;
+/* ===============================
+   WARP STAGE (ซ้าย) – ภาพเต็มพื้นที่
+================================ */
+.warp-stage{
+  padding:0; border:none; background:transparent;
   display:flex; flex-direction:column; min-height:0;
 }
-.panel-title{
-  margin:0 0 8px 2px;
-  font-size: clamp(16px, 2vw, 26px);
-  font-weight:700; color:#d9e6ff;
+.warp-stage .panel-title{ /* ซ่อนหัวข้อด้วย sr-only ใน HTML แล้ว; เผื่อ fallback */
+  display:none;
+}
+.warp-stage .list{
+  display:flex; align-items:center; justify-content:center;
+  flex:1 1 auto; min-height:0;
+  background:#000;
+  border-radius:8px;
+  overflow:hidden !important; /* ไม่มีสกอร์บาร์ */
+  margin:0;
+}
+.warp-stage .list > .item{
+  display:flex; align-items:center; justify-content:center;
+  width:100%; height:100%; padding:0; margin:0; border:0;
+}
+.warp-stage .warp-img{
+  width:100%; height:100%;
+  object-fit:contain;       /* ถ้าต้องการครอบเต็ม เผื่อขอบดำ → ใช้ cover */
+  display:block; background:#000;
+}
+.warp-only-text{
+  font-size:clamp(18px,2vw,28px); font-weight:800; color:#fff;
+  text-align:center; padding:12px;
 }
 
-.list{
-  list-style:none; margin:0; padding:0;
-  overflow-y:auto; scrollbar-width:thin; min-height:0;
+/* ===============================
+   CHAT SIDEBAR (ขวา) – โปร่ง, เลื่อนเฉพาะแชท
+================================ */
+.sidebar-chat{
+  background:rgba(8,12,18,.65);
+  backdrop-filter:blur(2px);
+  border:1px solid #203047;
+  border-radius:10px;
+  padding:0;
+  overflow:hidden;
+  display:flex; flex-direction:column; min-height:0;
 }
-.list::-webkit-scrollbar{ width:10px; }
-.list::-webkit-scrollbar-thumb{ background:#1c2636; border-radius:12px; }
-.list::-webkit-scrollbar-track{ background:transparent; }
+.sidebar-chat .panel-title{
+  margin:0; padding:8px 10px;
+  background:rgba(20,28,45,.75);
+  border-bottom:1px solid #203047;
+  font-size:20px; font-weight:800;
+}
+.sidebar-chat .sticky{ position:sticky; top:0; z-index:2; }
+.sidebar-chat .list{
+  flex:1 1 auto; min-height:0;
+  overflow-y:auto !important; scrollbar-width:thin;
+  padding:8px 6px;
+}
+.sidebar-chat .list::-webkit-scrollbar{ width:8px; }
+.sidebar-chat .list::-webkit-scrollbar-thumb{ background:#1c2636; border-radius:8px; }
+.sidebar-chat .item,.sidebar-chat .empty{
+  border-bottom:1px dashed #2a3a58; padding:10px 6px;
+}
+.sidebar-chat .name{ font-size:14px; color:#cfe1ff; }
+.sidebar-chat .msg{ font-size:14px; opacity:.95; }
 
-.item, .empty{
-  display:grid;
-  grid-template-columns: 1fr auto;
-  align-items:center;
-  gap:8px;
-  padding:12px;
-  border-bottom:1px dashed #223047;
-}
-.item:last-child, .empty:last-child{ border-bottom:none; }
-
-.name{
-  font-weight:700;
-  font-size: clamp(16px, 1.8vw, 22px);
-  color:#cfe1ff;
-}
-.msg{
-  grid-column: 1 / -1;
-  font-size: clamp(16px, 1.6vw, 20px);
-  color:#eaf1ff;
-  opacity:0.95;
-}
-.link{
-  padding:8px 12px; border-radius:10px; text-decoration:none;
-  color:#001e35; background:var(--accent);
-  font-weight:700; font-size: clamp(12px, 1.3vw, 16px);
-}
-.empty{
-  justify-content:center; color:var(--muted);
-  font-size: clamp(16px, 1.7vw, 20px);
-}
-
-/* Footer ticker */
-/* .screen-footer{ } */
-.ticker{
-  position:relative; height:48px; border:1px solid var(--border);
-  border-radius:16px; overflow:hidden; background:#0f1520;
-}
-.ticker-track{
-  position:absolute; white-space:nowrap; will-change: transform;
-  display:flex; gap:48px; align-items:center; height:100%;
-  animation:ticker 30s linear infinite;
-  padding:0 24px; color:#cde3ff; font-weight:600;
-  font-size: clamp(14px, 1.6vw, 18px);
-}
-@keyframes ticker{
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+/* ===============================
+   FOOTER TICKER (ล่าง) – เป็นบาร์ยาว
+================================ */
+/* ===== แถบ ticker ล่างแบบวนต่อเนื่อง ===== */
+.footer-bar .ticker {
+  position: relative;
+  height: 36px;
+  border: 2px solid #2d3c7a;
+  border-radius: 6px;
+  background: #0b1530;
+  overflow: hidden;
 }
 
-/* Responsive: ถ้าจอแนวตั้ง/เล็ก ให้แถวเดียวเรียงลง */
-@media (max-aspect-ratio: 4/3) {
-  .screen-grid{
-    grid-template-columns: 1fr;
-  }
+.footer-bar .ticker-track {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 80px; /* ระยะห่างระหว่างข้อความซ้ำ */
+  white-space: nowrap;
+  color: #fff;
+  font-weight: 800;
+  font-size: 20px; /* ปรับขนาดตัวอักษร */
+  padding: 0 30px;
+  line-height: 36px;
+  animation: ticker-loop 25s linear infinite;
 }
 
+/* ✅ animation loop: ไหลออกซ้าย แล้วโผล่มาจากขวาใหม่ */
+@keyframes ticker-loop {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(-100%); }
+}
 
-
+/* ===============================
+   UTILITIES & RESET
+================================ */
+.list{ list-style:none; margin:0; padding:0; overflow:hidden; min-height:0; scrollbar-width:none; }
+.list::-webkit-scrollbar{ display:none; }
+.item,.empty{ display:grid; grid-template-columns:1fr auto; align-items:center; gap:8px; padding:12px; border-bottom:1px dashed #223047; }
+.item:last-child,.empty:last-child{ border-bottom:none; }
+.name{ font-weight:700; font-size:clamp(16px,1.6vw,20px); color:#cfe1ff; }
+.msg{ grid-column:1/-1; font-size:clamp(16px,1.5vw,18px); color:#eaf1ff; opacity:.95; }
+.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.dot-red{ width:10px; height:10px; border-radius:999px; background:#ff5a5a; box-shadow:0 0 10px rgba(255,90,90,.8); display:inline-block; margin-left:6px; }
