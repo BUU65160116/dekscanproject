@@ -52,7 +52,7 @@ router.get("/warp/credits", requireAuth, async (req, res) => {
 
     const doRecalc = String(req.query.recalc || "") === "1";
     const credits = doRecalc
-      ? await recalcAndGetLeft(tableId)  // ⭐ รีคาลก์ครั้งเดียวตามคำสั่งผู้ใช้
+      ? await recalcAndGetLeft(tableId)  //  รีคาลก์ครั้งเดียวตามคำสั่งผู้ใช้
       : await getCreditsForToday(tableId);
 
     return res.json({ ok: true, data: credits });

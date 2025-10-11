@@ -5,75 +5,157 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title><%= title || "แจกวาป" %></title>
 
-  <!-- ใช้ไฟล์ warp.css เดิม -->
-  <link rel="stylesheet" href="/warp.css" />
+  <!-- รวมสไตล์ไว้ในไฟล์นี้เลย (ทับทั้งหน้า) -->
   <style>
-    /* พรีวิวรูป + ข้อความซ้อนบนรูป */
-    .preview{
-      position: relative;
-      margin-top: 12px;
-      border: 1px dashed #ddd;
-      border-radius: 12px;
-      overflow: hidden;
-      background: #fafafa;
+    :root{
+      --bg:#080b12;
+      --panel:#121826;
+      --panel-2:#161d2e;
+      --primary:#9b5cff;
+      --primary-2:#6a39ff;
+      --text:#e7e9ee;
+      --muted:#9aa3b2;
+      --ok:#18c964;
+      --err:#ff4d6d;
+      --ring:0 0 0 3px rgba(155,92,255,.25);
+      --shadow:0 10px 40px rgba(155,92,255,.25),0 2px 16px rgba(0,0,0,.5);
     }
-    .preview canvas{ display:block; width:100%; height:auto; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--text);
+      background:radial-gradient(1000px 500px at 50% -10%,rgba(155,92,255,.15),transparent 60%),var(--bg);
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Thai",sans-serif;
+    }
+    .wrap{max-width:940px;margin:48px auto;padding:0 16px}
 
-    .controls{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .filetip{ font-size:.9rem; color:#666; }
-    .status .ok{ color:#17c964; }
-    .status .err{ color:#ff4d4f; }
+    /* หัวเรื่อง */
+    .hero{text-align:center;margin-bottom:20px}
+    .hero h1{
+      font-size:40px;margin:0 0 8px;color:#c9b6ff;
+      text-shadow:0 0 12px rgba(155,92,255,.8),0 0 25px rgba(155,92,255,.4)
+    }
+    .sub{color:var(--muted);font-size:15px}
+
+    /* แถบเครดิต + ปุ่มเช็คสิทธิ์ */
+    .creditbar{
+      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+      margin:20px 0 26px;
+      background:linear-gradient(180deg,var(--panel-2),var(--panel));
+      border:1px solid #272f4d; border-radius:14px; padding:12px 16px;
+      box-shadow:0 0 15px rgba(155,92,255,.25);
+      justify-content:center;
+    }
+    .credits{
+      font-weight:600; color:#cfe0ff;
+    }
+    .credits strong{
+      font-weight:800; color:#fff; background:rgba(155,92,255,.22);
+      padding:3px 10px; border-radius:8px;
+      box-shadow:inset 0 0 10px rgba(155,92,255,.35);
+      font-variant-numeric:tabular-nums;
+    }
+    .btn{
+      appearance:none; border:0; cursor:pointer; user-select:none;
+      padding:10px 16px; border-radius:12px; font-weight:700; letter-spacing:.2px;
+      transition:.15s all;
+    }
+    .btn:focus{outline:none; box-shadow:var(--ring)}
+    .btn:hover:not(:disabled){transform:translateY(-2px)}
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+    .btn-outline{background:transparent; color:#e9dcff; border:1px solid rgba(155,92,255,.6)}
+    .btn-primary{background:linear-gradient(180deg,var(--primary),var(--primary-2)); color:#fff; box-shadow:var(--shadow)}
+    .status-inline{font-size:15px; font-weight:600}
+    .status-inline .ok{color:var(--ok)}
+    .status-inline .err{color:var(--err)}
+
+    /* การ์ดฟอร์ม */
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01)),var(--panel);
+      border:1px solid #1e2742; border-radius:16px; padding:20px 18px;
+      box-shadow:0 12px 26px rgba(0,0,0,.45);
+    }
+    .hint{color:var(--muted); text-align:center; margin:0 0 14px}
+    .field{margin:14px 0}
+    label{display:block; color:#c8d0e3; margin-bottom:8px; font-weight:600}
+    input[type="text"], input[type="file"]{
+      width:100%; border-radius:12px; border:1px solid #2a3352;
+      background:#0f1422; color:#fff; padding:12px 14px; outline:none;
+    }
+    input[type="text"]:focus{box-shadow:var(--ring); border-color:#4f5aa7}
+    .count{ text-align:right; color:var(--muted); font-size:13px; margin-top:6px }
+
+    /* พรีวิวรูป */
+    .preview{
+      position:relative; margin-top:14px; border-radius:14px; overflow:hidden;
+      background:#0f1422; border:1px dashed #33406b;
+    }
+    .preview canvas{display:block; width:100%; height:auto}
+
+    /* ปุ่มส่ง */
+    .actions{ display:flex; gap:12px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+    .status{ margin-top:12px; text-align:center }
+    .ok{ color:var(--ok) } .err{ color:var(--err) }
+
+    .back{ text-align:center; margin:16px 0 0 }
+    .back a{ color:#a9baff; text-decoration:none }
+    .back a:hover{ text-decoration:underline }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="topbar">
+    <header class="hero">
       <h1>แจกวาป</h1>
-      <div class="credits">สิทธิ์คงเหลือ: <span id="left" class="muted">-</span></div>
+      
+    </header>
+
+    <!-- สิทธิ์คงเหลือ + เช็คสิทธิ์ + สถานะ (บรรทัดเดียว) -->
+    <div class="creditbar">
+      <div class="credits">สิทธิ์คงเหลือ: <strong id="left">-</strong></div>
+      <button id="btnCheck" class="btn btn-outline">เช็คสิทธิ์</button>
+      <span id="statusInline" class="status-inline"></span>
+      <div class="sub">กรุณา <b>กดเช็คสิทธิ์ก่อนส่ง</b> เพื่ออัปเดตสิทธิ์ล่าสุด</div>
     </div>
 
     <section class="card">
       <p class="hint">เลือกภาพจากมือถือ แล้วพิมพ์ข้อความบนรูป (สูงสุด 20 ตัวอักษร)</p>
 
-      <!-- เลือกรูปจากเครื่อง -->
       <div class="field">
-        <label class="muted">เลือกรูป</label>
-        <div class="controls">
-          <input id="file" type="file" accept="image/*" />
-          <span class="filetip">แนะนำไม่เกิน ~5MB, ระบบจะย่ออัตโนมัติ</span>
-        </div>
+        <label>เลือกรูป</label>
+        <input id="file" type="file" accept="image/*" />
+        <div class="count" style="text-align:left;color:var(--muted)">แนะนำไม่เกิน ~5MB, ระบบจะย่ออัตโนมัติ</div>
       </div>
 
-      <!-- พิมพ์ข้อความ -->
       <div class="field">
-        <label class="muted">ข้อความบนรูป</label>
-        <input id="msg" type="text" maxlength="20" placeholder="พิมพ์ข้อความ / แคปชัน / IG " />
-        <div class="muted right"><span id="count">0</span>/20คำ</div>
+        <label>ข้อความบนรูป</label>
+        <input id="msg" type="text" maxlength="20" placeholder="พิมพ์ข้อความ / แคปชัน / IG" />
+        <div class="count"><span id="count">0</span>/20</div>
       </div>
 
-      <!-- พรีวิว (ภาพพร้อมข้อความซ้อน) -->
+      <!-- พรีวิว -->
       <div id="preview" class="preview" style="display:none">
         <canvas id="canvas"></canvas>
       </div>
 
-      <!-- ปุ่ม -->
-      <div class="row" style="margin-top:12px">
-        <button id="btnSend">ส่งวาป</button>
-        <button id="btnCheck" class="soft">เช็คสิทธิ์</button>
+      <!-- ปุ่มส่ง (เช็คสิทธิ์ก่อนถึงจะกดได้) -->
+      <div class="actions">
+        <button id="btnSend" class="btn btn-primary" disabled>ส่งวาป</button>
       </div>
 
-      <!-- สถานะ -->
+      <!-- สถานะหลัก (สำหรับผลส่งวาป) -->
       <div id="status" class="status"></div>
     </section>
 
-    <p class="muted footnote">
-      เมื่อส่งสำเร็จ ข้อความจะไปเข้าคิวและถูกฉายบนจอใหญ่ ~<%= process.env.WARP_SLIDE_SECONDS || 15 %> วินาที/ครั้ง
-    </p>
-    <p class="back"><a href="/home">← กลับหน้า Home</a></p>
+    <p class="back">
+  <a href="/home" class="btn-back">
+    <span class="icon">←</span> กลับหน้า Home
+  </a>
+</p>
+
   </div>
 
   <script>
-    // ===== อ้างอิง DOM =====
+    // ===== DOM =====
     const elLeft    = document.getElementById('left');
     const elMsg     = document.getElementById('msg');
     const elCount   = document.getElementById('count');
@@ -84,200 +166,158 @@
     const elSend    = document.getElementById('btnSend');
     const elCheck   = document.getElementById('btnCheck');
     const elStatus  = document.getElementById('status');
+    const elStatusInline = document.getElementById('statusInline');
 
     const esc = (s)=> (s||"").toString().replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
-    // ===== สถานะรูป/ข้อความในหน้านี้ =====
-    let baseImage = null;         // HTMLImageElement ของรูปดิบ
-    let composedDataURL = null;   // data:image/... ที่ซ้อนข้อความแล้ว (พร้อมส่ง)
+    let baseImage = null;      // <img> ดิบ
+    let composedDataURL = null; // dataURL หลังซ้อนข้อความ
 
-    // ===== ตัวช่วยตัดบรรทัด (ตามความกว้าง) =====
+    // ตัดบรรทัดข้อความตามความกว้าง
     function breakLines(context, text, maxWidth){
-      const words = (text||"").split(/\s+/).filter(Boolean);
-      const lines = [];
-      let line = "";
-      for(const word of words){
-        const test = line ? (line + " " + word) : word;
-        if(context.measureText(test).width <= maxWidth){
-          line = test;
-        }else{
-          if(line) lines.push(line);
-          line = word;
-        }
+      const words=(text||"").split(/\s+/).filter(Boolean);
+      const lines=[]; let line="";
+      for(const w of words){
+        const test=line? line+" "+w : w;
+        if(context.measureText(test).width<=maxWidth) line=test;
+        else{ if(line) lines.push(line); line=w; }
       }
       if(line) lines.push(line);
-      if(lines.length === 0) lines.push(""); // กรณีว่าง ให้มี 1 บรรทัด
-      return lines;
+      return lines.length? lines : [""];
     }
-
-    // ===== วาดภาพลง canvas + ซ้อนข้อความ =====
-    function roundRect(ctx, x, y, w, h, r){
-      const radius = Math.min(r, w/2, h/2);
+    // วาดกล่องโค้ง
+    function roundRect(ctx,x,y,w,h,r){
+      const rr=Math.min(r,w/2,h/2);
       ctx.beginPath();
-      ctx.moveTo(x+radius, y);
-      ctx.arcTo(x+w, y,   x+w, y+h, radius);
-      ctx.arcTo(x+w, y+h, x,   y+h, radius);
-      ctx.arcTo(x,   y+h, x,   y,   radius);
-      ctx.arcTo(x,   y,   x+w, y,   radius);
+      ctx.moveTo(x+rr,y);
+      ctx.arcTo(x+w,y,  x+w,y+h, rr);
+      ctx.arcTo(x+w,y+h,x,  y+h, rr);
+      ctx.arcTo(x,  y+h,x,  y,   rr);
+      ctx.arcTo(x,  y,  x+w,y,   rr);
       ctx.closePath();
     }
+    // วาดภาพ + ข้อความลง canvas
+    function drawToCanvasWithText(img,text){
+      const MAX_W=1280, ratio=img.width>MAX_W? (MAX_W/img.width):1;
+      const w=Math.round(img.width*ratio), h=Math.round(img.height*ratio);
+      elCanvas.width=w; elCanvas.height=h;
+      ctx.clearRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
 
-    function drawToCanvasWithText(img, text){
-      // 1) resize เพื่อลดขนาด payload (ภาพมือถือมัก 3–4K px)
-      const MAX_W = 1280;
-      const ratio = img.width > MAX_W ? (MAX_W / img.width) : 1;
-      const w = Math.round(img.width * ratio);
-      const h = Math.round(img.height * ratio);
+      const fontSize=Math.max(24, Math.round(w*0.045));
+      const lineHeight=Math.round(fontSize*1.25);
+      const maxWidth=Math.round(w*0.9);
+      ctx.font=`600 ${fontSize}px system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans Thai',sans-serif`;
+      ctx.textAlign="center"; ctx.textBaseline="top";
 
-      elCanvas.width = w;
-      elCanvas.height = h;
+      const lines=breakLines(ctx,text,maxWidth);
+      const startY=Math.round(h*.80 - (lines.length*lineHeight)/2);
 
-      ctx.clearRect(0,0,w,h);
-      ctx.drawImage(img, 0, 0, w, h);
-
-      // 2) คำนวณตำแหน่งข้อความ: ต่ำกว่ากึ่งกลางลงมาประมาณ 30%
-      const fontSize   = Math.max(24, Math.round(w * 0.045));
-      const lineHeight = Math.round(fontSize * 1.25);
-      const maxWidth   = Math.round(w * 0.9);
-
-      ctx.font = `600 ${fontSize}px system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Thai', sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-
-      const lines = breakLines(ctx, text, maxWidth);
-      const startY = Math.round(h * 0.80 - (lines.length * lineHeight)/2);
-
-      // กล่องพื้นหลังช่วยให้อ่านง่าย
-      const widths = lines.map(line => ctx.measureText(line).width);
-      const boxW   = Math.min(maxWidth, Math.max(...widths) + Math.round(fontSize*0.8));
-      const boxH   = lines.length * lineHeight + Math.round(fontSize*0.6);
-
-      ctx.fillStyle = "rgba(255,255,255,0.35)";
-      ctx.shadowColor = "transparent";
-      roundRect(ctx, (w-boxW)/2, startY - Math.round(fontSize*0.3), boxW, boxH, Math.round(fontSize*0.3));
+      // กล่องโปร่งหลังข้อความให้อ่านง่าย
+      const widths=lines.map(l=>ctx.measureText(l).width);
+      const boxW=Math.min(maxWidth, Math.max(...widths)+Math.round(fontSize*.8));
+      const boxH=lines.length*lineHeight + Math.round(fontSize*.6);
+      ctx.fillStyle="rgba(255,255,255,.10)";
+      roundRect(ctx,(w-boxW)/2, startY-Math.round(fontSize*.3), boxW, boxH, Math.round(fontSize*.3));
       ctx.fill();
 
-      // เงา + สีข้อความ
-      ctx.fillStyle = "#111";
-      ctx.shadowColor = "rgba(255,255,255,0.65)";
-      ctx.shadowBlur = Math.round(fontSize/5);
+      ctx.fillStyle="#fff";
+      ctx.shadowColor="rgba(155,92,255,.65)";
+      ctx.shadowBlur=Math.round(fontSize/5);
+      lines.forEach((l,i)=>ctx.fillText(l, Math.round(w/2), startY+i*lineHeight));
 
-      lines.forEach((line, i) => {
-        ctx.fillText(line, Math.round(w/2), startY + i*lineHeight);
-      });
-
-      // 3) export เป็น JPEG (เล็กกว่า PNG มาก) คุณภาพ ~82%
-      composedDataURL = elCanvas.toDataURL("image/jpeg", 0.82);
+      composedDataURL=elCanvas.toDataURL("image/jpeg", .82);
     }
 
-    // ===== events =====
-    // เปลี่ยนนับอักษร + re-render เมื่อพิมพ์ข้อความ
-    elMsg.addEventListener('input', () => {
+    // นับตัวอักษร + รีเฟรชพรีวิว
+    elMsg.addEventListener('input', ()=>{
       elCount.textContent = elMsg.value.length;
-      if(baseImage){
-        drawToCanvasWithText(baseImage, elMsg.value.trim());
-      }
+      if(baseImage) drawToCanvasWithText(baseImage, elMsg.value.trim());
     });
 
-    // เลือกรูปใหม่ → อ่านเป็น dataURL → โหลดเป็น <img> → วาดลง canvas
-    elFile.addEventListener('change', async (e) => {
-      const f = e.target.files && e.target.files[0];
-      if(!f){
-        baseImage = null; composedDataURL = null; elPreview.style.display='none';
-        return;
-      }
-
-      // ป้องกันไฟล์ใหญ่มาก ๆ ตั้งแต่ต้น (กันพลาด)
-      if (f.size > 20 * 1024 * 1024) { // >20MB
-        elStatus.innerHTML = '<span class="err">ไฟล์ใหญ่เกินไป (จำกัด ~20MB)</span>';
-        elFile.value = '';
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        const img = new Image();
-        img.onload = () => {
-          baseImage = img;
-          elPreview.style.display = 'block';
-          drawToCanvasWithText(img, elMsg.value.trim());
-        };
-        img.onerror = () => {
-          elStatus.innerHTML = '<span class="err">โหลดรูปไม่สำเร็จ</span>';
-        };
-        img.src = reader.result;
+    // อัปโหลดรูป → แสดงพรีวิว
+    elFile.addEventListener('change', e=>{
+      const f=e.target.files && e.target.files[0];
+      if(!f){ baseImage=null; composedDataURL=null; elPreview.style.display='none'; return; }
+      if(f.size>20*1024*1024){ elStatus.textContent=''; elStatusInline.innerHTML='<span class="err">ไฟล์ใหญ่เกินไป (&gt;20MB)</span>'; elFile.value=''; return; }
+      const reader=new FileReader();
+      reader.onload=()=>{
+        const img=new Image();
+        img.onload=()=>{ baseImage=img; elPreview.style.display='block'; drawToCanvasWithText(img, elMsg.value.trim()); };
+        img.onerror=()=>{ elStatusInline.innerHTML='<span class="err">โหลดรูปไม่สำเร็จ</span>'; };
+        img.src=reader.result;
       };
       reader.readAsDataURL(f);
     });
 
-    // ดึงเครดิตคงเหลือ ( ปรับให้มี delay 3 วิ + รีคาลก์จากเซิร์ฟเวอร์)
+    // เช็คสิทธิ์ (บังคับ flow: ต้องกดก่อน)
     async function refreshCredits(){
-      elStatus.textContent = 'กำลังเช็คสิทธิ์...';
+      elStatusInline.textContent = 'กำลังเช็คสิทธิ์...';
       elCheck.disabled = true;
       elSend.disabled  = true;
-
       try{
-        // หน่วง ~3 วิ ให้ผู้ใช้รู้สึกว่ากำลังอัปเดตจริง
-        await new Promise(r => setTimeout(r, 3000));
-
-        // ขอรีคาลก์จาก Odoo แล้วคืนค่า (ใช้ ?recalc=1)
-        const r = await fetch('/warp/credits?recalc=1');
+        const r = await fetch('/warp/credits?recalc=1', {cache:'no-store'});
         const j = await r.json();
         if(!j.ok) throw new Error(j.error || 'error');
         elLeft.textContent = j.data.left;
-        elStatus.innerHTML = '<span class="ok">อัปเดตสิทธิ์ล่าสุดแล้ว</span>';
+        elStatusInline.innerHTML = '<span class="ok">อัปเดตแล้ว</span>';
       }catch(err){
-        elStatus.innerHTML = '<span class="err">เช็คสิทธิ์ไม่สำเร็จ: '+ esc(err.message||err) +'</span>';
+        elStatusInline.innerHTML = '<span class="err">เช็คสิทธิ์ไม่สำเร็จ: '+ esc(err.message||err) +'</span>';
       }finally{
         const left = Number(elLeft.textContent || 0);
-        elSend.disabled  = (left <= 0);
+        elSend.disabled  = !(left > 0);
         elCheck.disabled = false;
       }
     }
 
-    // ส่งวาป (ส่งรูปที่ซ้อนข้อความแล้ว ถ้ามี)
+    // ส่งวาป
     async function submitWarp(){
-      const message = elMsg.value.trim();
-      if(message.length === 0){
-        elStatus.innerHTML = '<span class="err">กรุณากรอกข้อความ</span>';
-        elMsg.focus(); return;
+      const left = Number(elLeft.textContent || NaN);
+      if(Number.isNaN(left)){
+        elStatusInline.innerHTML = '<span class="err">กรุณาเช็คสิทธิ์ก่อนส่ง</span>';
+        return;
       }
-      const imageUrl = composedDataURL || null;   // อาจไม่มีรูป
+      if(left <= 0){
+        elStatusInline.innerHTML = '<span class="err">สิทธิ์หมด กรุณาเช็คอีกครั้ง</span>';
+        return;
+      }
+      const message = elMsg.value.trim();
+      if(!message){
+        elStatus.innerHTML = '<span class="err">กรุณากรอกข้อความ</span>';
+        elMsg.focus();
+        return;
+      }
 
       elSend.disabled = true;
       elStatus.textContent = 'กำลังส่ง...';
       try{
         const r = await fetch('/warp/use', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message, imageUrl })
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ message, imageUrl: composedDataURL || null })
         });
         const j = await r.json();
         if(!j.ok) throw new Error(j.error || 'ส่งไม่สำเร็จ');
 
-        elStatus.innerHTML = '<span class="ok">ส่งสำเร็จ! คิว #' + j.queueId + ' | สิทธิ์คงเหลือ: ' + j.left + '</span>';
         elLeft.textContent = j.left;
-
-        // รีโหลดอัตโนมัติหลัง 5 วิ (ปรับได้)
-        setTimeout(() => location.reload(), 5000);
+        elStatus.innerHTML = '<span class="ok">ส่งสำเร็จ! คิว #'+ j.queueId +' | สิทธิ์คงเหลือ: '+ j.left +'</span>';
 
         // เคลียร์ฟอร์ม
-        elMsg.value = ''; elCount.textContent = 0;
-        elFile.value = ''; baseImage = null; composedDataURL = null;
-        elPreview.style.display = 'none';
+        elMsg.value=''; elCount.textContent=0; elFile.value='';
+        baseImage=null; composedDataURL=null; elPreview.style.display='none';
       }catch(err){
         elStatus.innerHTML = '<span class="err">'+ esc(err.message||err) +'</span>';
       }finally{
-        const left = Number(elLeft.textContent || 0);
-        elSend.disabled = (left <= 0);
+        const newLeft = Number(elLeft.textContent || 0);
+        elSend.disabled = !(newLeft > 0);
       }
     }
 
+    // bind ปุ่ม
     elCheck.addEventListener('click', refreshCredits);
     elSend.addEventListener('click', submitWarp);
 
-    // เริ่มต้น: แสดงจำนวนสิทธิ์ล่าสุดด้วยการรีคาลก์ครั้งแรก (ถ้าไม่ต้องการ ให้คอมเมนต์)
-    refreshCredits();
+    // ไม่เช็คอัตโนมัติ — ให้ผู้ใช้กดเองเพื่อเน้น flow
+    // refreshCredits();
   </script>
 </body>
 </html>
