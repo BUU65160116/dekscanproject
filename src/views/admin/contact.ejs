@@ -1,72 +1,96 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title><%= title %></title>
-  <link rel="stylesheet" href="/admin.css" />
+  <link rel="stylesheet" href="/admin.css">
 </head>
 <body>
-   <%
-// แปลง "YYYY-MM-DD HH:mm:ss" (UTC จาก Odoo) -> เวลาไทย
+<%
+/* ===== helpers ===== */
 function toThaiLocal(utcStr) {
   if (!utcStr) return "-";
   try {
-    const iso = String(utcStr).replace(" ", "T") + "Z"; // ชี้ว่าคือ UTC
-    return new Date(iso).toLocaleString("th-TH", {
-      timeZone: "Asia/Bangkok",
-      hour12: false
-    });
-  } catch (e) {
-    return utcStr; // ถ้าแปลงพลาด ให้โชว์ค่าดิบไว้ก่อน
-  }
+    var iso = String(utcStr).replace(" ", "T") + "Z"; // Odoo ส่งมาเป็น UTC
+    return new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", hour12: false });
+  } catch (e) { return utcStr; }
 }
-  %>
+
+/* ===== การ์ดตัวแปรจาก controller ให้ปลอดภัยเสมอ ===== */
+var orderSafe    = (typeof order    !== "undefined" && order)    ? order    : {};
+var contactsSafe = (Array.isArray(contacts)) ? contacts : [];
+var contactSafe  = (typeof contact  !== "undefined" && contact)  ? contact  : null;
+
+/* โหมดข้อมูล */
+var hasList   = contactsSafe.length > 0;
+var hasSingle = !!contactSafe && !hasList;
+
+/* ตั้งแฟล็กคอลัมน์เวลา (true = แสดง) */
+var SHOW_LAST_SCAN = false;
+var colspan = SHOW_LAST_SCAN ? 3 : 2;
+
+/* คำนวณยอดค้าง */
+var amountTotal = Number(orderSafe.amountTotal || 0);
+var amountPaid  = Number(orderSafe.amountPaid  || 0);
+var due = amountTotal - amountPaid;
+%>
+
   <header>
     <h1>📇 ข้อมูลติดต่อ</h1>
   </header>
 
   <div class="wrap">
-    <!-- การ์ดรายละเอียดออเดอร์ของโต๊ะที่เลือก -->
     <section class="card">
       <div class="card-head">
-        <h2>โต๊ะ <%= order.tableNo ?? "-" %> | สถานะ: <%= order.state %></h2>
+        <h2>
+          โต๊ะ <%= (orderSafe.tableNo != null ? orderSafe.tableNo : "-") %>
+          | สถานะ: <%= (orderSafe.state ? orderSafe.state : "-") %>
+        </h2>
         <div class="actions">
           <a class="soft" href="/admin/dashboard">กลับ Dashboard</a>
         </div>
       </div>
 
-      <!-- ตารางข้อมูลติดต่อ (ชื่อ/เบอร์) -->
+      <!-- ตารางรายชื่อผู้ที่สแกน "วันนี้" -->
       <table class="table">
         <thead>
           <tr>
             <th>ลูกค้า</th>
             <th>เบอร์</th>
+            <% if (SHOW_LAST_SCAN) { %><th>สแกนล่าสุด</th><% } %>
           </tr>
         </thead>
         <tbody>
-          <% if (contact) { %>
+          <% if (hasList) { %>
+            <% contactsSafe.forEach(function(p){ %>
+              <tr>
+                <td><%= (p && p.name)  ? p.name  : "-" %></td>
+                <td><%= (p && p.phone) ? p.phone : "-" %></td>
+                <% if (SHOW_LAST_SCAN) { %>
+                  <td><%= (p && p.lastScan) ? new Date(p.lastScan).toLocaleString("th-TH", {hour12:false}) : "-" %></td>
+                <% } %>
+              </tr>
+            <% }); %>
+          <% } else if (hasSingle) { %>
             <tr>
-              <td><%= contact.name %></td>
-              <td><%= contact.phone %></td>
+              <td><%= contactSafe.name %></td>
+              <td><%= contactSafe.phone %></td>
+              <% if (SHOW_LAST_SCAN) { %><td>-</td><% } %>
             </tr>
           <% } else { %>
             <tr>
-              <td colspan="2" class="muted">ไม่พบข้อมูลติดต่อล่าสุดของโต๊ะนี้</td>
+              <td colspan="<%= colspan %>" class="muted">ยังไม่มีข้อมูลการสแกนของโต๊ะนี้ในวันนี้</td>
             </tr>
           <% } %>
         </tbody>
       </table>
 
-      <!-- สรุปยอดค้าง + เวลา -->
+      <!-- สรุปยอดค้าง + เวลาเปิดออเดอร์ -->
       <div class="muted" style="margin-top:8px">
-        ยอดค้าง:
-        <strong><%= (order.amountTotal - order.amountPaid).toFixed(2) %>฿</strong>
-        |
-        เปิดออเดอร์: <%= toThaiLocal(order.dateOrderUtc) %>
+        ยอดค้าง: <strong><%= due.toFixed(2) %>฿</strong>
+        | เปิดออเดอร์: <%= toThaiLocal(orderSafe.dateOrderUtc) %>
       </div>
-
-      
     </section>
   </div>
 </body>

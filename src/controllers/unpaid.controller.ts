@@ -15,22 +15,22 @@ export async function getUnpaidData(req: Request, res: Response) {
   }
 }
 
-// ---------- POST /admin/unpaid/contact/view (render view) ----------
+// ---------- POST /admin/unpaid/contact/view ----------
 export async function viewContact(req: Request, res: Response) {
-  try {
-    const { orderId, pin } = req.body || {};
-    if (!orderId) return res.status(400).send("missing orderId");
-    if (!pin || pin !== ADMIN_PIN) return res.status(403).send("PIN ไม่ถูกต้อง");
+  const { findContactsByTableToday } = require("../services/contact");
+  const { orderId, pin } = req.body || {};
+  if (!orderId) return res.status(400).send("missing orderId");
+  if (!pin || pin !== ADMIN_PIN) return res.status(403).send("PIN ไม่ถูกต้อง");
 
-    const { info, contact } = await getOrderInfoWithContact(Number(orderId));
-    if (!info) return res.status(404).send("ไม่พบออเดอร์นี้");
+  const { info } = await getOrderInfoWithContact(Number(orderId));
+  if (!info) return res.status(404).send("ไม่พบออเดอร์นี้");
+  if (info.tableNo == null) return res.status(400).send("missing tableNo");
 
-    return res.render("admin/contact", {
-      title: `ข้อมูลติดต่อ | โต๊ะ ${info.tableNo ?? "-"}`,
-      order: info,
-      contact, // { name, phone } | null
-    });
-  } catch (err: any) {
-    return res.status(500).send(err?.message || "error");
-  }
+  const contacts = await findContactsByTableToday(Number(info.tableNo));
+
+  return res.render("admin/contact", {
+    title: `ข้อมูลติดต่อ | โต๊ะ ${info.tableNo ?? "-"}`,
+    order: info,
+    contacts,
+  });
 }
