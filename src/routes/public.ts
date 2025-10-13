@@ -1,32 +1,32 @@
+// src/routes/public.ts
 import { Router } from "express";
 import { showLogin, submitLogin, showRegister, submitRegister } from "../controllers/user.controller";
 import { requireAuth } from "../middlewares/auth";
 
-// [new] import controller ของ public แทน inline handler
-import {
-  showHome,
-  showPointsPage,
-  showWarpPage,
-  logout,
-  // === [POINTS FEATURE] เพิ่ม controller สำหรับแลกแต้ม ===
-  redeemReward,
-} from "../controllers/public.controller";
+// ⬇️ ใช้ controller ของ public เฉพาะที่เกี่ยวกับ home/warp/logout เท่านั้น
+import { showHome, showWarpPage, logout } from "../controllers/public.controller";
+
+// ⬇️ ใช้ router ของแต้ม (ภายในไฟล์ routes/points.ts จะ requireAuth เองทุกเส้นทาง)
+import pointsRouter from "./points";
 
 const router = Router();
 
-// Login/Register (คงเดิม)
+// ===== Auth Pages (คงเดิม) =====
 router.get("/login", showLogin);
 router.post("/login", submitLogin);
 router.get("/register", showRegister);
 router.post("/register", submitRegister);
 
-// Home / Points / Warp / Logout (คงเดิม)
+// ===== Public Pages (คงเดิม) =====
 router.get("/home", showHome);
-router.get("/points", requireAuth, showPointsPage);
 router.get("/warp", requireAuth, showWarpPage);
 router.get("/logout", logout);
 
-// === [POINTS FEATURE] เส้นทางแลกแต้ม (POST /redeem) ===
-router.post("/redeem", requireAuth, redeemReward);
+// ===== Points Feature =====
+// แทนที่จะ import showPointsPage/redeemReward จาก public.controller (ผิดที่)
+// ให้เมานต์ทั้งฟีเจอร์ไว้ใต้ /points ผ่าน pointsRouter
+// -> GET /points
+// -> POST /points/redeem
+router.use("/points", pointsRouter);
 
 export default router;
