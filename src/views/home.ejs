@@ -13,7 +13,7 @@
     <div class="card">
       <p><strong>เบอร์โทร:</strong> <%= user.PhoneNumber %></p>
       <p><strong>โต๊ะ:</strong> <%= table %></p>
-      <p><strong>แต้มสะสม:</strong> <span class="points"><%= points %></span></p>
+      <p><strong>แต้มสะสม:</strong> <span class="points"><%= points %></span><strong>/10วัน</strong></p>
 
       <% if (checkedInToday) { %>
         <p><span class="chip chip-ok">เช็คอินวันนี้แล้ว </span></p>
@@ -23,8 +23,8 @@
     </div>
 
     <div class="row">
-      <a class="btn btn-secondary" href="/points">ดูรายละเอียดแต้ม</a>
-      <a class="btn btn-secondary" href="/warp">แจกวาปขึ้นจอ</a>
+      <a class="btn btn-secondary" href="/points">เเลกของรางวัล</a>
+      <a class="btn btn-secondary" href="/warp">แจกวาปขึ้นจอ 250/1สิทธิ์ต่อโต๊ะ</a>
       <a class="btn btn-secondary" href="/chat">เข้าแชทเรียลไทม์</a>
       <a class="btn btn-danger" href="/logout">ออกจากระบบ</a>
     </div>
