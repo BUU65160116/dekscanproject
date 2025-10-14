@@ -1,0 +1,154 @@
+/* =========================================================
+   CONTACT PAGE — ใช้ธีมเดียวกับ Dashboard (อ่านง่าย)
+   ========================================================= */
+
+:root{
+  --bg:#0e1117;
+  --panel:#171c24;
+  --panel-2:#1f2632;
+  --text:#f3f4f6;
+  --muted:#a0aec0;
+  --accent:#00c2a8;
+  --accent-hover:#06d6b5;
+  --danger:#ff5c5c;
+  --danger-hover:#ff3b3b;
+  --border:#2a3343;
+}
+
+/* โครงร่างพื้นฐาน */
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Inter","Prompt",system-ui,-apple-system,Segoe UI,Arial,sans-serif;
+  font-size:15px;
+  line-height:1.6;
+  margin:0;
+}
+
+.wrap{
+  max-width:1100px;
+  margin:24px auto;
+  padding:0 16px;
+}
+
+header h1{margin:16px 0 0 16px}
+
+/* การ์ด */
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:18px 20px;
+  box-shadow:0 6px 20px rgba(0,0,0,.25);
+}
+
+.card + .card{margin-top:22px}
+
+.card-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:12px;
+}
+
+.card-head h2{
+  margin:0;
+  font-size:1.1rem;
+  color:var(--text);
+}
+
+/* ปุ่ม/ลิงก์ */
+button, .btn, a.soft{
+  cursor:pointer;
+  border-radius:8px;
+  padding:8px 12px;
+  border:1px solid var(--border);
+  background:var(--panel-2);
+  color:var(--text);
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:.35rem;
+  transition:.15s ease;
+}
+button:hover, .btn:hover, a.soft:hover{ background:#2a3343 }
+
+button.danger{
+  background:var(--danger);
+  border:none;
+  color:#fff;
+}
+button.danger:hover{ background:var(--danger-hover) }
+
+/* ตาราง */
+.table{
+  width:100%;
+  border-collapse:collapse;
+  background:var(--panel-2);
+  border-radius:12px;
+  overflow:hidden;
+}
+.table th,.table td{
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+}
+.table th{
+  background:#202835;
+  color:var(--muted);
+  font-weight:600;
+  font-size:.9rem;
+}
+.table tr:hover{ background:#262f3f }
+
+.muted{ color:var(--muted) }
+
+/* Utilities ระยะห่าง */
+.mt-8{ margin-top:8px }
+.mt-16{ margin-top:16px }
+
+/* Dialog ฟอร์ม (bulk) */
+#debtDialog{
+  color:var(--text);
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:22px 24px;
+  box-shadow:0 0 35px rgba(0,0,0,.6);
+  max-width:420px;
+}
+
+#debtDialog h3{
+  margin:0 0 12px 0;
+  text-align:center;
+}
+
+#debtDialog label{
+  display:block;
+  margin-bottom:8px;
+  font-weight:500;
+}
+
+#debtDialog input{
+  width:100%;
+  padding:8px 10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:#1d2533;
+  color:var(--text);
+  font-size:.95rem;
+  margin-top:6px;
+}
+#debtDialog input:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px rgba(0,194,168,.35);
+}
+
+#debtDialog menu{
+  display:flex;
+  justify-content:flex-end;
+  gap:.5rem;
+  margin-top:10px;
+}

@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title><%= title %></title>
-  <link rel="stylesheet" href="/admin.css">
+  <!-- เปลี่ยนมาใช้ไฟล์ที่แยกแล้ว -->
+  <link rel="stylesheet" href="/css/contact.css">
 </head>
 <body>
 <%
@@ -28,7 +29,8 @@ var hasSingle = !!contactSafe && !hasList;
 
 /* ตั้งแฟล็กคอลัมน์เวลา (true = แสดง) */
 var SHOW_LAST_SCAN = false;
-var colspan = SHOW_LAST_SCAN ? 3 : 2;
+/* ❗ ไม่มีคอลัมน์ปุ่มแล้ว */
+var BASE_COLS = 2 + (SHOW_LAST_SCAN ? 1 : 0);
 
 /* คำนวณยอดค้าง */
 var amountTotal = Number(orderSafe.amountTotal || 0);
@@ -52,7 +54,7 @@ var due = amountTotal - amountPaid;
         </div>
       </div>
 
-      <!-- ตารางรายชื่อผู้ที่สแกน "วันนี้" -->
+      <!-- ตารางรายชื่อผู้ที่สแกน "วันนี้" (ไม่มีปุ่มต่อแถวแล้ว) -->
       <table class="table">
         <thead>
           <tr>
@@ -80,18 +82,136 @@ var due = amountTotal - amountPaid;
             </tr>
           <% } else { %>
             <tr>
-              <td colspan="<%= colspan %>" class="muted">ยังไม่มีข้อมูลการสแกนของโต๊ะนี้ในวันนี้</td>
+              <td colspan="<%= BASE_COLS %>" class="muted">ยังไม่มีข้อมูลการสแกนของโต๊ะนี้ในวันนี้</td>
             </tr>
           <% } %>
         </tbody>
       </table>
 
       <!-- สรุปยอดค้าง + เวลาเปิดออเดอร์ -->
-      <div class="muted" style="margin-top:8px">
+      <div class="muted mt-8">
         ยอดค้าง: <strong><%= due.toFixed(2) %>฿</strong>
         | เปิดออเดอร์: <%= toThaiLocal(orderSafe.dateOrderUtc) %>
       </div>
+
+      <!-- ปุ่มเดียว: บันทึกค้างชำระ (ทุกคนในโต๊ะ) -->
+      <div class="mt-16">
+        <button id="btnAddDebtAll" class="soft" data-order-id="<%= orderSafe.orderId %>">
+          กดบันทึกค้างชำระ
+        </button>
+      </div>
     </section>
   </div>
+
+<!-- ส่งรายชื่อทั้งหมดลง JS (ใช้งาน bulk) -->
+<script>
+  window.CONTACTS_DATA = <%- JSON.stringify(
+    (contactsSafe || []).map(function (p) {
+      return {
+        name:  (p && p.name)  ? p.name  : "",
+        phone: (p && p.phone) ? p.phone : ""
+      };
+    })
+  ) %>;
+</script>
+
+<!-- Dialog ฟอร์มบันทึกค้างชำระ (เวอร์ชันรวม) -->
+<dialog id="debtDialog">
+  <form method="dialog" class="debt-form">
+    <h3>บันทึกค้างชำระ (ทุกคนในโต๊ะ)</h3>
+
+    <label>โต๊ะ
+      <input type="text" id="tableNo" readonly>
+    </label>
+
+    <label>ยอดค้างโต๊ะนี้
+      <input type="number" id="amount" step="0.01" min="0" inputmode="decimal">
+    </label>
+
+    <label>หมายเหตุ (ของบิลโต๊ะนี้)
+      <input type="text" id="note" placeholder="พิมพ์หมายเหตุรวมของโต๊ะ...">
+    </label>
+
+    <menu>
+      <button type="button" id="cancelBtn" class="soft">ยกเลิก</button>
+      <button type="button" id="saveBtn" class="danger">บันทึก</button>
+    </menu>
+  </form>
+</dialog>
+
+<!-- Script จัดการ Dialog (bulk only) -->
+<script>
+  //  รอให้หน้าเว็บโหลดเสร็จก่อน
+  document.addEventListener("DOMContentLoaded", () => {
+    const dialog  = document.getElementById("debtDialog");
+    const bulkBtn = document.getElementById("btnAddDebtAll");
+    const orderId = bulkBtn?.getAttribute("data-order-id");
+    let tableNote = ""; // หมายเหตุรวมของบิลโต๊ะ
+
+    // ดึงข้อมูลพื้นฐานจาก /prefill (tableNo/amount) แล้วเปิด dialog
+    async function prefillBase() {
+      const res = await fetch(`/admin/unpaid/contact/prefill?orderId=${orderId}`);
+      const js  = await res.json();
+      if (!js.ok) { alert(js.error || "เกิดข้อผิดพลาด"); return null; }
+      return js.data; // {tableNo, amount, ...}
+    }
+
+    // เปิด dialog เมื่อกดปุ่มรวม
+    bulkBtn?.addEventListener("click", async () => {
+      const d = await prefillBase(); if (!d) return;
+      dialog.querySelector("#tableNo").value = d.tableNo ?? "";
+      dialog.querySelector("#amount").value  = d.amount ?? "";
+      dialog.querySelector("#note").value    = tableNote; // ใช้หมายเหตุเดิม
+      dialog.showModal();
+    });
+
+    // ปิด dialog
+    document.getElementById("cancelBtn")?.addEventListener("click", () => {
+      dialog.close();
+    });
+
+    // บันทึกแบบรวม
+    const saveBtn = document.getElementById("saveBtn");
+    saveBtn?.addEventListener("click", async () => {
+      const tableNo   = dialog.querySelector("#tableNo").value.trim();
+      const amountStr = dialog.querySelector("#amount").value.trim();
+      const noteInput = dialog.querySelector("#note").value.trim();
+      const amount    = Number(amountStr);
+
+      if (!isFinite(amount) || amount < 0) return alert("ยอดค้างไม่ถูกต้อง");
+
+      // รายชื่อทั้งหมดของโต๊ะ (วันนี้)
+      const people = (window.CONTACTS_DATA || [])
+        .map(p => ({ customerName: (p?.name || "").trim(), phone: (p?.phone || "").trim() }))
+        .filter(p => p.customerName && p.phone);
+      if (!people.length) return alert("ไม่มีรายชื่อในโต๊ะนี้");
+
+      tableNote = noteInput; // จำหมายเหตุรวมของโต๊ะ
+
+      saveBtn.disabled = true;
+      try {
+        const res = await fetch("/admin/manual-debt/bulk-create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tableNo: tableNo ? Number(tableNo) : null,
+            amount,
+            note: tableNote,
+            people
+          })
+        });
+        const js = await res.json();
+        if (!js.ok) return alert(js.error || "บันทึกไม่สำเร็จ");
+
+        alert(` บันทึกค้างชำระเรียบร้อยแล้ว (${js.inserted} รายการ)`);
+        dialog.close();
+      } catch (e) {
+        alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+  });
+</script>
 </body>
 </html>

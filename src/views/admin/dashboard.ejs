@@ -4,17 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title><%= title %></title>
-  <link rel="stylesheet" href="/admin.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
 </head>
 <body>
   <!-- =========================================================
-       Header + actions
+       HEADER หลักของหน้า
        ========================================================= -->
   <header>
     <h1>📊 Admin Mode</h1>
   </header>
 
   <div class="wrap">
+    <!-- =========================================================
+         แถบหัวหน้า Dashboard + ปุ่มทางลัด
+         ========================================================= -->
     <header class="header">
       <h1>Dashboard</h1>
       <div class="actions">
@@ -26,59 +29,104 @@
     </header>
 
     <!-- =========================================================
-         ค้างชำระ (ดึงจาก Odoo)
+         การ์ด: รายการค้างชำระจาก Odoo (Unpaid)
          ========================================================= -->
     <section class="card">
       <div class="card-head">
-        <h2>รายการค้างชำระ</h2>
+        <h2>รายการโต๊ะที่ยังไม่ชำระ</h2>
         <div class="actions">
           <button id="unpaidRefresh">รีเฟรช</button>
         </div>
       </div>
 
-      <!-- วางการ์ดต่อโต๊ะ -->
+      <!-- กริดแสดงการ์ดต่อโต๊ะ -->
       <div id="unpaidGrid" class="grid-2 gap-16">
         <div class="muted">กำลังโหลด...</div>
       </div>
     </section>
 
     <!-- =========================================================
-         Modal: ใส่ PIN แอดมิน (แทน window.prompt)
+         การ์ด: ค้างชำระ (บันทึกเอง) จาก manual_debt
          ========================================================= -->
-    <dialog id="pinDialog">
-      <form id="pinForm" method="dialog" class="card" style="min-width:280px">
-        <h3>ใส่ PIN แอดมิน</h3>
+    <section class="card" id="manualDebtCard">
+      <div class="card-head">
+        <h2>รายการค้างชำระ </h2>
+        <div class="actions">
+          <button id="btnReloadManualDebt" class="soft">รีเฟรช</button>
+        </div>
+      </div>
 
-        <!-- ปล่อยให้เป็น a-z A-Z 0-9 ความยาว 4–32 -->
-        <input
-          id="pinInput"
-          type="password"
-          required
-          minlength="4"
-          maxlength="32"
-          pattern="[A-Za-z0-9]{4,32}"
-          autocomplete="off"
-          placeholder="กรอก PIN"
-        />
+      <table class="table" id="manualDebtTable">
+        <thead>
+          <tr>
+            <th>โต๊ะ</th>
+            <th>ชื่อลูกค้า</th>
+            <th>เบอร์</th>
+            <th>ยอดค้าง</th>
+            <th>หมายเหตุ</th>
+            <th>สถานะ</th>
+            <th>บันทึกเมื่อ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="7" class="muted">กำลังโหลด...</td></tr>
+        </tbody>
+      </table>
+    </section>
 
-        <menu style="display:flex;gap:.5rem;justify-content:flex-end">
-          <!-- ทำให้กด Enter = “ตกลง” -->
-          <button id="pinOk" value="ok" class="danger" type="submit" autofocus>ตกลง</button>
-          <!-- ยกเลิกไม่ติด required/pattern -->
-          <button value="cancel" class="soft" type="submit" formnovalidate>ยกเลิก</button>
+    <!-- =========================================================
+         DIALOG: แก้ไข/ปิดงาน manual_debt
+         ========================================================= -->
+    <dialog id="editDebtDialog">
+      <form method="dialog" class="card" style="min-width:320px">
+        <h3>แก้ไข/ปิดงาน ค้างชำระ</h3>
+
+        <!-- เก็บค่า DebtID ไว้ส่งกลับ -->
+        <input type="hidden" id="edDebtId">
+
+        <label>โต๊ะ
+          <input type="text" id="edTable" readonly>
+        </label>
+
+        <label>ชื่อลูกค้า
+          <input type="text" id="edName" required>
+        </label>
+
+        <label>เบอร์โทร
+          <input type="text" id="edPhone" required>
+        </label>
+
+        <label>ยอดค้าง (บาท)
+          <input type="number" id="edAmount" step="0.01" min="0" inputmode="decimal" required>
+        </label>
+
+        <label>หมายเหตุ
+          <input type="text" id="edNote" placeholder="ใส่หมายเหตุเพิ่มเติม...">
+        </label>
+
+        <label>สถานะ
+          <select id="edStatus">
+            <option value="open">open</option>
+            <option value="resolved">resolved</option>
+          </select>
+        </label>
+
+        <menu style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:10px">
+          <button type="button" id="edCancel" class="soft">ยกเลิก</button>
+          <button type="button" id="edSave" class="danger">บันทึก</button>
         </menu>
       </form>
     </dialog>
 
     <!-- =========================================================
-         จัดการแชทเรียลไทม์
+         การ์ด: แชทเรียลไทม์ (ลูกค้าส่งขึ้นจอ)
          ========================================================= -->
     <section class="card">
       <div class="card-head">
         <h2>แชทเรียลไทม์ (ลูกค้าส่งขึ้นจอได้ทันที)</h2>
         <div class="actions">
           <button id="btnRefresh">รีเฟรช</button>
-          <button id="btnClear" class="danger">ล้างจอทั้งหมด</button>
+          <button id="btnClear" class="danger">ล้างแชททั้งหมด</button>
         </div>
       </div>
 
@@ -100,25 +148,32 @@
   </div>
 
   <!-- =========================================================
-       Scripts
+       SCRIPTS รวม (จัดเป็นหมวดหมู่เพื่อแก้ไขง่าย)
        ========================================================= -->
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    // ---------- Helpers ----------
+    // =========================================================
+    // [GLOBAL HELPERS] — รวมฟังก์ชันช่วยเหลือใช้งานทั่วไป
+    // =========================================================
     const esc     = (s) => (s || '').toString().replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const fmtTime = (s) => { try { return new Date(s).toLocaleString(); } catch { return s; } };
     const fmtTHB  = (n) => {
       try { return new Intl.NumberFormat('th-TH', { style:'currency', currency:'THB' }).format(n || 0); }
       catch { return (n || 0).toFixed(2) + '฿'; }
     };
+    // แสดงเวลาไทยแบบกำหนดโซน (ใช้ในตาราง manual_debt)
+    const fmtThai = (s) => {
+      if (!s) return "-";
+      return new Date(s).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", hour12: false });
+    };
 
     // =========================================================
-    // 1) แชทเรียลไทม์
+    // [REALTIME CHAT] — โหลด/ลบ/เคลียร์ข้อความ และฟัง event สด
     // =========================================================
-    const ioClient  = io();
-    const tbody     = document.getElementById('chatBody');
-    const btnRefresh= document.getElementById('btnRefresh');
-    const btnClear  = document.getElementById('btnClear');
+    const ioClient   = io();
+    const tbody      = document.getElementById('chatBody');
+    const btnRefresh = document.getElementById('btnRefresh');
+    const btnClear   = document.getElementById('btnClear');
 
     function rowHtml(it) {
       return `
@@ -146,7 +201,7 @@
       tbody.innerHTML = json.data.map(rowHtml).join('');
     }
 
-    // ลบเดี่ยว
+    // ลบข้อความเดี่ยว
     tbody.addEventListener('click', async (e) => {
       const btn = e.target.closest('[data-del]');
       if (!btn) return;
@@ -163,7 +218,7 @@
       }
     });
 
-    // ล้างทั้งหมด
+    // ล้างข้อความทั้งหมด
     btnClear.addEventListener('click', async () => {
       if (!confirm('ล้างข้อความบนจอทั้งหมด?')) return;
       const res = await fetch('/admin/chat/clear', { method: 'POST' });
@@ -173,7 +228,9 @@
       }
     });
 
+    // โหลดข้อความครั้งแรก + ปุ่มรีเฟรช
     btnRefresh.addEventListener('click', loadData);
+    loadData();
 
     // realtime events
     ioClient.on('newMessage', (data) => {
@@ -187,26 +244,22 @@
       };
       tbody.insertAdjacentHTML('afterbegin', rowHtml(row));
     });
-
     ioClient.on('deleteMessage', ({ chatId }) => {
       document.getElementById(`row-${chatId}`)?.remove();
       if (!tbody.querySelector('tr')) {
         tbody.innerHTML = `<tr><td colspan="5" class="muted">ยังไม่มีข้อความ</td></tr>`;
       }
     });
-
     ioClient.on('clearChat', () => {
       tbody.innerHTML = `<tr><td colspan="5" class="muted">เคลียร์แล้ว</td></tr>`;
     });
 
-    // โหลดครั้งแรก
-    loadData();
-
     // =========================================================
-    // 2) ค้างชำระ + เปิดหน้า “ข้อมูลติดต่อ” (ตรวจ PIN ที่เซิร์ฟเวอร์)
+    // [UNPAID (Odoo)] — โหลดการ์ดค้างชำระ และเปิดหน้า "ข้อมูลติดต่อ"
+    //    ✅ ตัด PIN ออก: กดปุ่มแล้วเปิด contact โดยตรง (GET)
     // =========================================================
-    const unpaidGrid        = document.getElementById('unpaidGrid');
-    const unpaidRefreshBtn  = document.getElementById('unpaidRefresh');
+    const unpaidGrid       = document.getElementById('unpaidGrid');
+    const unpaidRefreshBtn = document.getElementById('unpaidRefresh');
 
     function unpaidCardHtml(row) {
       const table = row.tableNo ?? '-';
@@ -224,9 +277,11 @@
             </tbody>
           </table>
           <div class="actions">
-            <button class="soft btnContact" data-order-id="${row.orderId}" data-table="${table}">
+            <!-- เปิดหน้า contact ตรง ๆ โดยไม่ถาม PIN -->
+            <a class="soft" target="_blank" rel="noopener"
+               href="/admin/unpaid/contact/view?orderId=${row.orderId}">
               ข้อมูลติดต่อ
-            </button>
+            </a>
           </div>
         </div>`;
     }
@@ -236,7 +291,6 @@
       try {
         const r = await fetch('/admin/unpaid/data');
         const j = await r.json();
-
         if (!j.ok) throw new Error(j.error || 'โหลดไม่สำเร็จ');
         if (!j.data || !j.data.length) {
           unpaidGrid.innerHTML = `<div class="muted">ไม่มีค้างชำระวันนี้</div>`;
@@ -248,65 +302,142 @@
       }
     }
 
-    // ให้รีเฟรชเฉพาะตอนกดปุ่ม
+    // ปุ่มรีเฟรช + โหลดครั้งแรก
     unpaidRefreshBtn?.addEventListener('click', loadUnpaid);
-
-    // โหลดครั้งแรก (ถ้าไม่ต้องการให้โหลดอัตโนมัติ สามารถคอมเมนต์บรรทัดนี้ออก)
     loadUnpaid();
 
-    // ------ Modal PIN + เปิดหน้าข้อมูลติดต่อ ------
-    const pinDialog = document.getElementById('pinDialog');
-    const pinForm   = document.getElementById('pinForm');
-    const pinInput  = document.getElementById('pinInput');
+    // =========================================================
+    // [MANUAL DEBT] — โหลดรายการจาก manual_debt (อ่าน/แก้ไข)
+    // =========================================================
+    document.addEventListener("DOMContentLoaded", () => {
+      const tableBody = document.querySelector("#manualDebtTable tbody");
+      const btnReload = document.getElementById("btnReloadManualDebt");
 
-    // orderId ปัจจุบันที่กำลังจะดูข้อมูลติดต่อ
-    let currentOrderId = null;
+      async function loadManualDebt() {
+        try {
+          tableBody.innerHTML = `<tr><td colspan="7" class="muted">กำลังโหลด...</td></tr>`;
+          const res = await fetch("/admin/manual-debt/list?limit=200", { method: "GET" });
+          const js  = await res.json();
+          if (!js.ok) throw new Error(js.error || "load failed");
 
-    // คลิกปุ่ม “ข้อมูลติดต่อ” -> เปิด modal
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest('.btnContact');
-      if (!btn) return;
+          const rows = Array.isArray(js.data) ? js.data : [];
+          if (!rows.length) {
+            tableBody.innerHTML = `<tr><td colspan="7" class="muted">ไม่มีรายการค้างชำระ (บันทึกเอง)</td></tr>`;
+            return;
+          }
 
-      currentOrderId = btn.dataset.orderId;
-      pinInput.value = '';
-      pinDialog.showModal();
-      pinInput.focus();
-    });
+          // สร้างแถว HTML
+          const html = rows.map((r) => {
+            const safe    = (v) => (v === null || v === undefined ? "-" : String(v));
+            const fmtBaht = (n) => (Number(n || 0)).toFixed(2);
+            return `
+              <tr data-id="${r.DebtID}">
+                <td>${safe(r.TableID)}</td>
+                <td>${safe(r.CustomerName)}</td>
+                <td>${safe(r.Phone)}</td>
+                <td>${fmtBaht(r.Amount)}</td>
+                <td>${safe(r.Note)}</td>
+                <td><span class="pill">${safe(r.Status)}</span></td>
+                <td>${fmtThai(r.CreatedAt)}</td>
+                <td>
+                  <button class="soft btnEditDebt"
+                    data-id="${r.DebtID}"
+                    data-table="${safe(r.TableID)}"
+                    data-name="${safe(r.CustomerName)}"
+                    data-phone="${safe(r.Phone)}"
+                    data-amount="${fmtBaht(r.Amount)}"
+                    data-note="${safe(r.Note)}"
+                    data-status="${safe(r.Status)}"
+                  >แก้ไข/ปิดงาน</button>
+                </td>
+              </tr>
+            `;
+          }).join("");
 
-    // ส่งฟอร์ม dialog (กด Enter หรือคลิกปุ่ม)
-    pinForm.addEventListener('submit', (e) => {
-      e.preventDefault(); // กันปิดเอง เพื่อควบคุม flow
-      const action = e.submitter?.value; // "ok" หรือ "cancel"
+          tableBody.innerHTML = html;
 
-      if (action === 'cancel') {
-        pinDialog.close();
-        return;
+        } catch (e) {
+          console.error(e);
+          tableBody.innerHTML = `<tr><td colspan="7" class="muted">โหลดไม่สำเร็จ</td></tr>`;
+        }
       }
 
-      // action === "ok"
-      if (!pinForm.reportValidity()) return; // required/pattern
+      // ปุ่มรีเฟรช + โหลดครั้งแรก
+      btnReload?.addEventListener("click", loadManualDebt);
+      loadManualDebt();
 
-      const pin = pinInput.value.trim();
-      if (!currentOrderId) { pinDialog.close(); return; }
+      // ========= ฟังก์ชัน/ตัวแปรสำหรับแก้ไข =========
+      const dlg     = document.getElementById("editDebtDialog");
+      const edId    = document.getElementById("edDebtId");
+      const edTable = document.getElementById("edTable");
+      const edName  = document.getElementById("edName");
+      const edPhone = document.getElementById("edPhone");
+      const edAmount= document.getElementById("edAmount");
+      const edNote  = document.getElementById("edNote");
+      const edStatus= document.getElementById("edStatus");
+      const edCancel= document.getElementById("edCancel");
+      const edSave  = document.getElementById("edSave");
 
-      openContact(currentOrderId, pin); // เปิดแท็บใหม่แบบ POST
-      pinDialog.close();
+      // เปิด dialog เมื่อกดปุ่ม "แก้ไข/ปิดงาน"
+      document.getElementById("manualDebtTable").addEventListener("click", (e) => {
+        const btn = e.target.closest(".btnEditDebt");
+        if (!btn) return;
+
+        // เติมค่าจาก data-* เข้าฟอร์ม
+        edId.value     = btn.dataset.id || "";
+        edTable.value  = btn.dataset.table || "";
+        edName.value   = btn.dataset.name || "";
+        edPhone.value  = btn.dataset.phone || "";
+        edAmount.value = btn.dataset.amount || "0";
+        edNote.value   = btn.dataset.note && btn.dataset.note !== "-" ? btn.dataset.note : "";
+        edStatus.value = (btn.dataset.status === "resolved") ? "resolved" : "open";
+
+        dlg.showModal();
+      });
+
+      // ปิด dialog
+      edCancel.addEventListener("click", () => dlg.close());
+
+      // บันทึกการแก้ไข → POST /admin/manual-debt/update
+      edSave.addEventListener("click", async () => {
+        const payload = {
+          debtId: Number(edId.value),
+          customerName: edName.value.trim(),
+          phone: edPhone.value.trim(),
+          amount: Number(edAmount.value),
+          note: edNote.value.trim(),
+          status: edStatus.value === "resolved" ? "resolved" : "open",
+        };
+
+        // เช็คค่าง่ายๆ ฝั่งหน้า
+        if (!payload.customerName || !payload.phone) {
+          alert("กรอกชื่อและเบอร์ให้ครบ"); return;
+        }
+        if (!isFinite(payload.amount) || payload.amount < 0) {
+          alert("ยอดค้างไม่ถูกต้อง"); return;
+        }
+
+        try {
+          edSave.disabled = true;
+          const res = await fetch("/admin/manual-debt/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const js = await res.json();
+          if (!js.ok) throw new Error(js.error || "update failed");
+
+          alert("✅ อัปเดตเรียบร้อย");
+          dlg.close();
+          // รีโหลดตารางเพื่อเห็นผล
+          document.getElementById("btnReloadManualDebt")?.click();
+        } catch (err) {
+          alert(err.message || "เกิดข้อผิดพลาด");
+        } finally {
+          edSave.disabled = false;
+        }
+      });
     });
-
-    // เปิดหน้าข้อมูลติดต่อด้วย POST (user gesture -> ไม่โดน block)
-    function openContact(orderId, pin) {
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = '/admin/unpaid/contact/view';
-      form.target = '_blank';
-      form.innerHTML = `
-        <input type="hidden" name="orderId" value="${orderId}" />
-        <input type="hidden" name="pin"     value="${pin}" />
-      `;
-      document.body.appendChild(form);
-      form.submit();
-      form.remove();
-    }
   </script>
 </body>
 </html>

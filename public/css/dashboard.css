@@ -1,0 +1,278 @@
+/* =========================================================
+   DASHBOARD PAGE — DARK THEME (Readable + Usable)
+   ========================================================= */
+
+:root {
+  --bg: #0e1117;
+  --panel: #171c24;
+  --panel-2: #1f2632;
+  --text: #f3f4f6;
+  --muted: #a0aec0;
+  --accent: #00c2a8;
+  --accent-hover: #06d6b5;
+  --danger: #ff5c5c;
+  --danger-hover: #ff3b3b;
+  --border: #2a3343;
+}
+
+/* พื้นหลัง + ตัวอักษร */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", "Prompt", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* การ์ดหลักใน dashboard */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 22px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-head h2 {
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+/* ปุ่ม */
+button {
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+button.soft {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+}
+button.soft:hover {
+  background: #2a3343;
+}
+
+button.danger {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+}
+button.danger:hover {
+  background: var(--danger-hover);
+}
+
+/* ปุ่ม accent หลัก */
+button.primary {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 6px 12px;
+}
+button.primary:hover {
+  background: var(--accent-hover);
+}
+
+/* ตารางข้อมูล */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--panel-2);
+  border-radius: 12px;
+  overflow: hidden;
+  color: var(--text);
+}
+
+.table th, .table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.table th {
+  background: #202835;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.table tr:hover {
+  background: #262f3f;
+}
+
+.table .muted {
+  color: var(--muted);
+  text-align: center;
+  padding: 16px;
+}
+
+/* Dialog ฟอร์มแก้ไข/ปิดงาน */
+#editDebtDialog {
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: 0 0 35px rgba(0, 0, 0, 0.6);
+  max-width: 400px;
+}
+
+#editDebtDialog h3 {
+  font-size: 1.25rem;
+  color: var(--text);
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+#editDebtDialog label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+#editDebtDialog input,
+#editDebtDialog select {
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #1d2533;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+#editDebtDialog input:focus,
+#editDebtDialog select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0, 194, 168, 0.4);
+}
+
+/* PIN Dialog */
+#pinDialog {
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+  width: 320px;
+}
+
+#pinDialog h3 {
+  margin-bottom: 12px;
+  color: var(--text);
+  text-align: center;
+}
+
+#pinDialog input {
+  width: 100%;
+  padding: 8px;
+  background: #1d2533;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+}
+
+/* Grid */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* =========================================================
+   HEADER BAR (Dashboard Header)
+   ========================================================= */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.3px;
+}
+
+/* ปุ่มใน header */
+.header .actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header .actions a.soft,
+.header .actions button.soft {
+  background: #1f2733;
+  color: #f3f4f6;
+  border: 1px solid #2a3343;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.header .actions a.soft:hover,
+.header .actions button.soft:hover {
+  background: #2d3648;
+  color: #fff;
+}
+
+/* ปุ่มออกจากระบบแบบอันตรายนิด ๆ */
+.header .actions button.soft {
+  background: #2b3341;
+}
+.header .actions button.soft:hover {
+  background: #ff4d6d;
+  border-color: #ff4d6d;
+  color: #fff;
+}
+
+/* ===== ปุ่มลิงก์ที่ใช้ class="soft" (เหมือนปุ่มทั่วไป) ===== */
+a.soft {
+  display: inline-block;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  text-decoration: none;
+  font-weight: 500;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+a.soft:hover {
+  background: #2a3343;
+  color: var(--accent);
+}
