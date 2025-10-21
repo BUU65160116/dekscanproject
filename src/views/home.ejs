@@ -8,26 +8,66 @@
 </head>
 <body>
   <div class="container">
-    <h2>คุณ <%= user.Name %> • <%= shop %> ยินดีต้อนรับ</h2>
 
-    <div class="card">
-      <p><strong>เบอร์โทร:</strong> <%= user.PhoneNumber %></p>
-      <p><strong>โต๊ะ:</strong> <%= table %></p>
-      <p><strong>แต้มสะสม:</strong> <span class="points"><%= points %></span><strong>/10วัน</strong></p>
+    <!-- HERO PUBCAST STYLE -->
+    <section class="hero hero--no-text">
+      <div class="hero-top no-phone">
+        <div class="hero-text">
+          <div class="hero-welcome-top">
+            คุณ <strong><%= user.Name %></strong> • <strong><%= shop %></strong> ยินดีต้อนรับ
+          </div>
+        </div>
+      </div>
 
-      <% if (checkedInToday) { %>
-        <p><span class="chip chip-ok">เช็คอินวันนี้แล้ว </span></p>
-      <% } else { %>
-        <p><span class="chip chip-warn">ยังไม่ได้เช็คอินวันนี้</span></p>
-      <% } %>
-    </div>
+      <div class="hero-bottom hero-bottom--info">
+        <ul class="hb-list">
+          <li><span>เบอร์โทร:</span> <%= user.PhoneNumber %></li>
+          <li><span>โต๊ะ:</span> <%= table %></li>
+          <li>
+            <span>แต้มสะสม:</span>
+            <span class="points"><%= points %></span>
+            <% if (checkedInToday) { %>
+              <div class="chip chip-ok">เช็คอินวันนี้แล้ว</div>
+            <% } else { %>
+              <div class="chip chip-warn">ยังไม่ได้เช็คอินวันนี้</div>
+            <% } %>
+          </li>
+        </ul>
+      </div>
+    </section>
+    <!-- /HERO -->
 
-    <div class="row">
-      <a class="btn btn-secondary" href="/points">เเลกของรางวัล</a>
-      <a class="btn btn-secondary" href="/warp">แจกวาปขึ้นจอ 250/1สิทธิ์ต่อโต๊ะ</a>
-      <a class="btn btn-secondary" href="/chat">เข้าแชทเรียลไทม์</a>
-      <a class="btn btn-danger" href="/logout">ออกจากระบบ</a>
-    </div>
+    <!-- เมนูหลัก -->
+    <section class="tile-area">
+      <a class="promo-banner" href="/warp">
+        <div class="promo-text">
+          <div class="t1">ส่งรูปคุณให้ทั้งร้านเห็น! ✨</div>
+          <div class="t2">เพียงสั่งครบ 250 บาท ก็ขึ้นจอได้ทันที</div>
+        </div>
+      </a>
+
+      <div class="tile-grid two">
+        <!-- แลกของรางวัล -->
+       <a class="tile redeem" href="/points">
+  <div class="tile-icon redeem-ic">
+    <img class="tile-img" src="/img/1.png" alt="แลกของรางวัล">
+  </div>
+  <div class="tile-title">แลกของรางวัล</div>
+</a>
+
+
+        <!-- เข้าแชทเรียลไทม์ -->
+       <a class="tile chat" href="/chat">
+  <div class="tile-icon chat-ic">
+    <img class="tile-img" src="/img/2.png" alt="เข้าแชทเรียลไทม์">
+  </div>
+  <div class="tile-title">เข้าแชทเรียลไทม์</div>
+</a>
+
+      <div class="aux-row">
+        <a class="btn-danger" href="/logout">ออกจากระบบ</a>
+      </div>
+    </section>
   </div>
 </body>
 </html>

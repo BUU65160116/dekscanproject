@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="utf-8"><title>รายละเอียดแต้ม</title>
+  <meta charset="utf-8" />
+  <title>รายละเอียดแต้ม</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- ลิงก์ไฟล์ CSS ใหม่ -->
-  <link rel="stylesheet" href="/css/points.css">
+  <!-- ชี้ไปที่ไฟล์สไตล์ points.css -->
+  <link rel="stylesheet" href="/css/points.css" />
 </head>
 <body>
   <div class="container">
     <div class="card">
+      <!-- ส่วนหัว + แต้มคงเหลือ -->
       <div class="header">
         <div class="title">รายละเอียดแต้ม</div>
         <div class="points-badge">
@@ -24,36 +26,49 @@
         <div class="chip warn">ยังไม่ได้เช็คอินวันนี้</div>
       <% } %>
 
-      <!-- ปุ่มแลก 3 แบบ -->
-      <div class="section">
-        <div class="grid">
-          <form method="POST" action="/points/redeem">
-            <input type="hidden" name="rewardType" value="DISCOUNT50">
-            <button class="btn btn-primary" <%= !canRedeem ? "disabled" : "" %>>
-              แลกส่วนลด 50 บาท
-              <span class="sub">(ใช้ 10 แต้ม)</span>
-            </button>
-          </form>
+      <!-- ปุ่มแลกของรางวัล -->
+     <div class="section">
+  <div class="grid">
+    <!-- แลกส่วนลด 50 บาท -->
+    <form method="POST" action="/points/redeem">
+      <input type="hidden" name="rewardType" value="DISCOUNT50" />
+      <button class="btn btn-primary redeem" <%= !canRedeem ? "disabled" : "" %>>
+        <img class="redeem-ic" src="/img/discount.jpg" alt="ส่วนลด 50 บาท" />
+        <span class="redeem-txt">
+          <span class="title">แลกส่วนลด 50 บาท</span>
+          <span class="sub">(ใช้ 10 แต้ม)</span>
+        </span>
+      </button>
+    </form>
 
-          <form method="POST" action="/points/redeem">
-            <input type="hidden" name="rewardType" value="ICE_BUCKET">
-            <button class="btn btn-primary" <%= !canRedeem ? "disabled" : "" %>>
-              น้ำแข็ง 1 ถัง
-              <span class="sub">(ใช้ 10 แต้ม)</span>
-            </button>
-          </form>
+    <!--kulov  -->
+    <form method="POST" action="/points/redeem">
+      <input type="hidden" name="rewardType" value="ICE_BUCKET" />
+      <button class="btn btn-primary redeem" <%= !canRedeem ? "disabled" : "" %>>
+        <img class="redeem-ic" src="/img/ice.jpeg" alt="น้ำแข็ง 1 ถัง " />
+        <span class="redeem-txt">
+          <span class="title">น้ำแข็ง 1 ถัง</span>
+          <span class="sub">(ใช้ 10 แต้ม)</span>
+        </span>
+      </button>
+    </form>
 
-          <form method="POST" action="/points/redeem">
-            <input type="hidden" name="rewardType" value="COKE_1">
-            <button class="btn btn-primary" <%= !canRedeem ? "disabled" : "" %>>
-              โค้ก 1 ขวด
-              <span class="sub">(ใช้ 10 แต้ม)</span>
-            </button>
-          </form>
-        </div>
-      </div>
+    <!-- โค้ก 1 ขวด -->
+    <form method="POST" action="/points/redeem">
+      <input type="hidden" name="rewardType" value="COKE_1" />
+      <button class="btn btn-primary redeem" <%= !canRedeem ? "disabled" : "" %>>
+        <img class="redeem-ic" src="/img/mix.jpg" alt="โค้ก 1 ขวด " />
+        <span class="redeem-txt">
+          <span class="title">โค้ก 1 ขวด</span>
+          <span class="sub">(ใช้ 10 แต้ม)</span>
+        </span>
+      </button>
+    </form>
+  </div>
+</div>
 
-      <!-- ประวัติแลกล่าสุด  -->
+
+      <!-- ประวัติแลกล่าสุด -->
       <div class="section">
         <div class="title" style="font-size:16px;">ประวัติแลกล่าสุด</div>
 
@@ -73,9 +88,11 @@
           <div class="chip">ยังไม่มีประวัติการแลก</div>
         <% } %>
 
-        <div class="footer-links">
-          <a class="link" href="/home">← กลับหน้า Home</a>
-        </div>
+        <!-- ปุ่มกลับหน้า Home -->
+   <div class="footer-back">
+  <a href="/home" class="back-link"><span class="arrow">←</span> กลับหน้า Home</a>
+</div>
+
       </div>
     </div>
   </div>

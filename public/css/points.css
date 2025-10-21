@@ -12,6 +12,7 @@
   --danger:#ff5b5b;
   --border:#1e2a38;
   --chip-bg:#0f1b26;
+  --blue:#67a6ff;               /* ใช้กับปุ่มย้อนกลับ */
 }
 
 *{ box-sizing:border-box; }
@@ -73,7 +74,6 @@ html,body{
   padding:6px 10px; border-radius:999px; border:1px solid var(--border);
   background: var(--chip-bg); color: var(--muted); font-size:13px;
 }
-
 .chip.ok{ color: var(--success); border-color: rgba(23,212,123,.35); }
 .chip.warn{ color: var(--danger); border-color: rgba(255,91,91,.35); }
 
@@ -87,6 +87,7 @@ html,body{
   .grid{ grid-template-columns: repeat(3, 1fr); }
 }
 
+/* ปุ่มทั่วไป */
 .btn{
   appearance:none; border:1px solid var(--border);
   background: #16202b; color: var(--text);
@@ -102,15 +103,14 @@ html,body{
   background: linear-gradient(135deg, #0b2a38, #172f46);
   border-color:#274055;
 }
-.btn-primary .sub{ display:block; font-weight:500; color:var(--muted); font-size:12px; margin-top:4px; }
-
-.btn[disabled]{
-  opacity:.45; cursor:not-allowed; filter:saturate(.7);
+.btn-primary .sub{
+  display:block; font-weight:500; color:var(--muted); font-size:12px; margin-top:4px;
 }
 
-.table{
-  width:100%; border-collapse: collapse;
-}
+.btn[disabled]{ opacity:.45; cursor:not-allowed; filter:saturate(.7); }
+
+/* ตารางสรุป */
+.table{ width:100%; border-collapse: collapse; }
 .table-row{
   display:flex; justify-content:space-between; gap:12px;
   padding:10px 0; border-bottom:1px dashed #1b2735;
@@ -118,10 +118,67 @@ html,body{
 .table-key{ color: var(--muted); }
 .table-val{ font-weight:600; }
 
-.footer-links{
-  display:flex; gap:12px; margin-top:18px; flex-wrap:wrap;
+/* =============================
+   ปุ่ม "กลับหน้า Home" (ghost ฟ้า)
+   ============================= */
+.footer-back{
+  margin-top:12px;
+  display:flex;
+  justify-content:flex-start; /* ชิดซ้าย */
 }
-.link{
-  color: var(--accent); text-decoration:none; font-weight:600;
+
+.back-link{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 12px;
+  border-radius:10px;
+  color:var(--blue);
+  border:1px solid rgba(103,166,255,.28);
+  background:transparent;
+  text-decoration:none; font-weight:700;
+  transition: background .2s, border-color .2s, color .2s, box-shadow .2s, transform .1s;
 }
-.link:hover{ text-decoration: underline; }
+.back-link .arrow{ line-height:1; font-size:18px; transform:translateY(-1px); }
+.back-link:hover{
+  background:rgba(103,166,255,.10);
+  border-color:rgba(103,166,255,.55);
+  color:#cfe2ff;
+}
+.back-link:active{ transform:translateY(1px); }
+.back-link:focus-visible{
+  outline:none; box-shadow:0 0 0 3px rgba(103,166,255,.25);
+}
+
+/* =============================
+   Redeem card: รูปบน / ข้อความล่าง
+   ============================= */
+.btn.redeem{
+  display:flex;
+  flex-direction:column;         /* เรียงแนวตั้ง */
+  align-items:flex-start;        /* ถ้าอยากกึ่งกลาง -> center */
+  gap:8px;
+  padding:14px;
+  text-align:left;
+}
+.redeem-ic{
+  width:44px; height:44px;
+  object-fit:cover;
+  border-radius:10px;
+  display:block;
+  background:#0f1a24;
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow: inset 0 0 8px rgba(255,255,255,.06);
+}
+.redeem-txt .title{
+  display:block;
+  font-weight:200;
+  font-size:18px;
+  line-height:1.25;
+  margin:0;
+}
+.redeem-txt .sub{
+  display:block;
+  margin-top:4px;
+  font-size:12px;
+  opacity:.85;
+  color:var(--muted);
+}

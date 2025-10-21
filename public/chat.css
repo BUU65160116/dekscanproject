@@ -25,34 +25,36 @@ body{
     linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
 }
 
-/* Layout */
+/* ===== Layout ===== */
 .wrap{
   min-height:100dvh;
   display:grid;
-  place-items:center;
+  place-content:center;      /* กึ่งกลางทั้งแนวตั้งและแนวนอน */
+  justify-items:center;
+  gap:16px;                  /* เว้นระยะ h1 กับการ์ด */
   padding:32px 16px;
 }
 
 h1{
-  margin:0 0 20px;
+  margin:0 0 16px;
   text-align:center;
   font-size:clamp(22px,3.5vw,34px);
   color:var(--neon);
   text-shadow:0 0 14px rgba(199,125,255,.7);
 }
 
-/* Card */
+/* ===== Card ===== */
 .card{
   width:min(700px,92vw);
   background:rgba(23,26,34,.86);
   border:1px solid var(--ring);
   border-radius:18px;
-  padding:22px;
+  padding:22px 26px;
   backdrop-filter:blur(10px);
   box-shadow:var(--glow);
 }
 
-/* Fields */
+/* ===== Fields ===== */
 .field{
   display:block;
   margin:14px 0;
@@ -62,7 +64,7 @@ h1{
 .field b{ color:#fff }
 .info{ color:#9fb4ff } /* ใช้กับ "โต๊ะของคุณ" */
 
-/* Inputs */
+/* ===== Inputs ===== */
 input, textarea{
   width:100%;
   margin-top:8px;
@@ -70,7 +72,7 @@ input, textarea{
   border-radius:12px;
   background:#0f131a;
   color:#eaf0ff;
-  border:1.5px solid rgba(199,125,255,.35);    /* ให้กรอบเห็นชัด */
+  border:1.5px solid rgba(199,125,255,.35);
   outline:none;
   transition:border-color .18s, box-shadow .18s, background .18s;
 }
@@ -82,7 +84,7 @@ input:focus, textarea:focus{
   box-shadow:0 0 0 3px rgba(199,125,255,.22), 0 0 14px rgba(199,125,255,.45);
 }
 
-/* Button */
+/* ===== Button ===== */
 .btn{
   width:100%;
   margin-top:12px;
@@ -104,14 +106,34 @@ input:focus, textarea:focus{
 .btn:active{ transform:translateY(1px) }
 .btn:disabled{ opacity:.65; cursor:not-allowed; filter:saturate(.7) }
 
-/* Link back */
-.card a{
-  color:var(--blue);
-  text-decoration:underline;
-}
-.card a:hover{ color:#b8d4ff }
+/* ===== Back link ===== */
+.back{ margin-top:12px }
+.card a{ text-decoration:none }
 
-/* Overlay (sending) */
+.back-link{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-radius:10px;
+  color:var(--blue);
+  border:1px solid rgba(103,166,255,.28);
+  background:transparent;
+  transition:background .2s, border-color .2s, color .2s, box-shadow .2s, transform .1s;
+}
+.back-link .arrow{ line-height:1; font-size:18px; transform:translateY(-1px) }
+.back-link:hover{
+  background:rgba(103,166,255,.10);
+  border-color:rgba(103,166,255,.55);
+  color:#cfe2ff;
+}
+.back-link:active{ transform:translateY(1px) }
+.back-link:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 3px rgba(103,166,255,.25);
+}
+
+/* ===== Overlay (ส่งข้อความ) ===== */
 .overlay{
   position:fixed; inset:0;
   background:rgba(8,10,14,.62);
@@ -139,41 +161,7 @@ input:focus, textarea:focus{
 }
 @keyframes spin{ to{ transform:rotate(360deg) } }
 
-/* Small screens */
+/* ===== Small screens ===== */
 @media (max-width:480px){
   .card{ padding:18px }
 }
-/* Back link as a ghost button */
-.back{ margin-top:12px }
-
-.card a{ text-decoration:none }            /* ตัดเส้นใต้ลิงก์ทั้งหมดในการ์ด */
-
-.back-link{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 12px;
-  border-radius:10px;
-  color:var(--blue);
-  border:1px solid rgba(103,166,255,.28);
-  background:transparent;
-  transition:background .2s, border-color .2s, color .2s, box-shadow .2s, transform .1s;
-}
-
-.back-link .arrow{ line-height:1; font-size:18px; transform:translateY(-1px) }
-
-.back-link:hover{
-  background:rgba(103,166,255,.10);
-  border-color:rgba(103,166,255,.55);
-  color:#cfe2ff;
-}
-
-.back-link:active{ transform:translateY(1px) }
-
-.back-link:focus-visible{
-  outline:none;
-  box-shadow:0 0 0 3px rgba(103,166,255,.25);
-}
-
-/* กันชิดขอบล่างของการ์ดเกินไป */
-.card{ padding-bottom:26px }

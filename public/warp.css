@@ -1,100 +1,208 @@
 :root{
-      --bg:#080b12;
-      --panel:#121826;
-      --panel-2:#161d2e;
-      --primary:#9b5cff;
-      --primary-2:#6a39ff;
-      --text:#e7e9ee;
-      --muted:#9aa3b2;
-      --ok:#18c964;
-      --err:#ff4d6d;
-      --ring:0 0 0 3px rgba(155,92,255,.25);
-      --shadow:0 10px 40px rgba(155,92,255,.25),0 2px 16px rgba(0,0,0,.5);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; color:var(--text);
-      background:radial-gradient(1000px 500px at 50% -10%,rgba(155,92,255,.15),transparent 60%),var(--bg);
-      font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Thai",sans-serif;
-    }
-    .wrap{max-width:940px;margin:48px auto;padding:0 16px}
+  --bg:#080b12;
+  --panel:#121826;
+  --panel-2:#161d2e;
+  --primary:#9b5cff;
+  --primary-2:#6a39ff;
+  --text:#e7e9ee;
+  --muted:#9aa3b2;
+  --ok:#18c964;
+  --err:#ff4d6d;
+  --ring:0 0 0 3px rgba(155,92,255,.25);
+  --shadow:0 10px 40px rgba(155,92,255,.25),0 2px 16px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; color:var(--text);
+  background:radial-gradient(1000px 500px at 50% -10%,rgba(155,92,255,.15),transparent 60%),var(--bg);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Thai",sans-serif;
+}
+.wrap{max-width:940px;margin:48px auto;padding:0 16px}
 
-    /* หัวเรื่อง */
-    .hero{text-align:center;margin-bottom:20px}
-    .hero h1{
-      font-size:40px;margin:0 0 8px;color:#c9b6ff;
-      text-shadow:0 0 12px rgba(155,92,255,.8),0 0 25px rgba(155,92,255,.4)
-    }
-    .sub{color:var(--muted);font-size:15px}
+/* หัวเรื่อง */
+.hero{text-align:center;margin-bottom:20px}
+.hero h1{
+  font-size:40px;margin:0 0 8px;color:#c9b6ff;
+  text-shadow:0 0 12px rgba(155,92,255,.8),0 0 25px rgba(155,92,255,.4)
+}
+.sub{color:var(--muted);font-size:15px}
 
-    /* แถบเครดิต + ปุ่มเช็คสิทธิ์ */
-    .creditbar{
-      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
-      margin:20px 0 26px;
-      background:linear-gradient(180deg,var(--panel-2),var(--panel));
-      border:1px solid #272f4d; border-radius:14px; padding:12px 16px;
-      box-shadow:0 0 15px rgba(155,92,255,.25);
-      justify-content:center;
-    }
-    .credits{
-      font-weight:600; color:#cfe0ff;
-    }
-    .credits strong{
-      font-weight:800; color:#fff; background:rgba(155,92,255,.22);
-      padding:3px 10px; border-radius:8px;
-      box-shadow:inset 0 0 10px rgba(155,92,255,.35);
-      font-variant-numeric:tabular-nums;
-    }
-    .btn{
-      appearance:none; border:0; cursor:pointer; user-select:none;
-      padding:10px 16px; border-radius:12px; font-weight:700; letter-spacing:.2px;
-      transition:.15s all;
-    }
-    .btn:focus{outline:none; box-shadow:var(--ring)}
-    .btn:hover:not(:disabled){transform:translateY(-2px)}
-    .btn:disabled{opacity:.55; cursor:not-allowed}
-    .btn-outline{background:transparent; color:#e9dcff; border:1px solid rgba(155,92,255,.6)}
-    .btn-primary{background:linear-gradient(180deg,var(--primary),var(--primary-2)); color:#fff; box-shadow:var(--shadow)}
-    .status-inline{font-size:15px; font-weight:600}
-    .status-inline .ok{color:var(--ok)}
-    .status-inline .err{color:var(--err)}
-
-    /* การ์ดฟอร์ม */
-    .card{
-      background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01)),var(--panel);
-      border:1px solid #1e2742; border-radius:16px; padding:20px 18px;
-      box-shadow:0 12px 26px rgba(0,0,0,.45);
-    }
-    .hint{color:var(--muted); text-align:center; margin:0 0 14px}
-    .field{margin:14px 0}
-    label{display:block; color:#c8d0e3; margin-bottom:8px; font-weight:600}
-    input[type="text"], input[type="file"]{
-      width:100%; border-radius:12px; border:1px solid #2a3352;
-      background:#0f1422; color:#fff; padding:12px 14px; outline:none;
-    }
-    input[type="text"]:focus{box-shadow:var(--ring); border-color:#4f5aa7}
-    .count{ text-align:right; color:var(--muted); font-size:13px; margin-top:6px }
-
-    /* ปรับขนาดพรีวิวรูปให้พอดี */
-.preview {
-  max-width: 360px;     /*  จำกัดความกว้างสูงสุดของพรีวิว */
-  margin: 10px auto;    /*  จัดให้อยู่กลาง */
+/* แถบเครดิต + ปุ่มเช็คสิทธิ์ */
+.creditbar{
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  margin:20px 0 26px;
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  border:1px solid #272f4d; border-radius:14px; padding:12px 16px;
+  box-shadow:0 0 15px rgba(155,92,255,.25);
+  justify-content:center;
+}
+.credits{ font-weight:600; color:#cfe0ff; }
+.credits strong{
+  font-weight:800; color:#fff; background:rgba(155,92,255,.22);
+  padding:3px 10px; border-radius:8px;
+  box-shadow:inset 0 0 10px rgba(155,92,255,.35);
+  font-variant-numeric:tabular-nums;
 }
 
-.preview canvas {
-  width: 80% !important;   /*  ย่อให้พอดีกับกล่อง */
-  height: auto !important;  /*  รักษาสัดส่วน ไม่บิดรูป */
+.btn{
+  appearance:none; border:0; cursor:pointer; user-select:none;
+  padding:10px 16px; border-radius:12px; font-weight:700; letter-spacing:.2px;
+  transition:.15s all;
+}
+.btn:focus{outline:none; box-shadow:var(--ring)}
+.btn:hover:not(:disabled){transform:translateY(-2px)}
+.btn:disabled{opacity:.55; cursor:not-allowed}
+.btn-outline{background:transparent; color:#e9dcff; border:1px solid rgba(155,92,255,.6)}
+.btn-primary{background:linear-gradient(180deg,var(--primary),var(--primary-2)); color:#fff; box-shadow:var(--shadow)}
+.status-inline{font-size:15px; font-weight:600}
+.status-inline .ok{color:var(--ok)}
+.status-inline .err{color:var(--err)}
+
+/* การ์ดฟอร์ม */
+.card{
+  background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01)),var(--panel);
+  border:1px solid #1e2742; border-radius:16px; padding:20px 18px;
+  box-shadow:0 12px 26px rgba(0,0,0,.45);
+}
+.hint{color:var(--muted); text-align:center; margin:0 0 14px}
+.field{margin:14px 0}
+label{display:block; color:#c8d0e3; margin-bottom:8px; font-weight:600}
+input[type="text"], input[type="file"]{
+  width:100%; border-radius:12px; border:1px solid #2a3352;
+  background:#0f1422; color:#fff; padding:12px 14px; outline:none;
+}
+input[type="text"]:focus{box-shadow:var(--ring); border-color:#4f5aa7}
+.count{ text-align:right; color:var(--muted); font-size:13px; margin-top:6px }
+
+/* พรีวิวรูป */
+.preview{ max-width:360px; margin:10px auto; }
+.preview canvas{
+  width:80% !important; height:auto !important;
+  border-radius:12px; display:block; background:#000;
+}
+
+/* ปุ่มส่ง */
+.actions{ display:flex; gap:12px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+.status{ margin-top:12px; text-align:center }
+.ok{ color:var(--ok) } .err{ color:var(--err) }
+
+/* ลิงก์ทั่วไปท้ายหน้า */
+.back{ text-align:center; margin:16px 0 0 }
+.back a{ color:#a9baff; text-decoration:none }
+.back a:hover{ text-decoration:underline }
+
+/* =============================
+   ปุ่ม "กลับหน้า Home" (โทนม่วงตามธีม)
+   ============================= */
+.footer-back{
+  margin-top:16px;
+  display:flex;
+  justify-content:flex-start;               /* ชิดซ้าย */
+}
+/* === Back to Home (match points theme) === */
+.footer-back{
+  margin-top:16px;
+  display:flex;
+  justify-content:flex-start;          /* ชิดซ้ายเหมือน points */
+}
+
+.back-link{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 16px;
+  border-radius:12px;
+
+  /* glassy + สีพื้น/กรอบเท่าหน้า points */
+  background:rgba(18,20,30,.60);
+  backdrop-filter:blur(8px);
+  color:#e8ddff;                       /* ตัวอักษรม่วงอ่อนอ่านง่าย */
+  text-decoration:none;
+  font-weight:700;
+  letter-spacing:.2px;
+
+  border:1px solid rgba(155,92,255,.40);     /* ใช้ --primary */
+  box-shadow:
+    0 4px 14px rgba(0,0,0,.30),
+    0 0 10px rgba(155,92,255,.25);
+
+  transition:
+    background .25s ease, border-color .25s ease, color .25s ease,
+    transform .10s ease, box-shadow .25s ease;
+}
+
+/* ลูกศรซ้าย */
+.back-link::before{
+  content:"";
+  width:8px; height:8px;
+  border-left:2px solid currentColor;
+  border-bottom:2px solid currentColor;
+  transform:rotate(45deg);
+  margin-right:2px;
+}
+
+/* ===== ปุ่ม "กลับหน้า Home" (ฟ้าเรียบ ไม่เรืองแสง) ===== */
+.footer-back {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
   border-radius: 12px;
-  display: block;
-  background: #000;
+
+  background: #121826;                   /* สีพื้นเข้ม */
+  color: #cfe2ff;                        /* ตัวอักษรฟ้าอ่อน */
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  border: 1px solid rgba(103,166,255,0.35); /* เส้นขอบฟ้าอ่อน */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);     /* เงานุ่มธรรมดา */
+
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.1s ease;
 }
 
-    /* ปุ่มส่ง */
-    .actions{ display:flex; gap:12px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
-    .status{ margin-top:12px; text-align:center }
-    .ok{ color:var(--ok) } .err{ color:var(--err) }
+/* ลูกศรซ้าย */
+.back-link::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  margin-right: 4px;
+}
 
-    .back{ text-align:center; margin:16px 0 0 }
-    .back a{ color:#a9baff; text-decoration:none }
-    .back a:hover{ text-decoration:underline }
+/* Hover (แค่สว่างขึ้นนิดหน่อย) */
+.back-link:hover {
+  background: #1a2233;
+  border-color: rgba(103,166,255,0.55);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Active (ตอนคลิก) */
+.back-link:active {
+  transform: translateY(0);
+  background: #101620;
+  border-color: rgba(103,166,255,0.45);
+}
+
+/* Focus (เมื่อใช้ Tab) */
+.back-link:focus-visible {
+  outline: none;
+  border-color: rgba(103,166,255,0.6);
+}
+
+/* จอเล็ก */
+@media (max-width: 480px) {
+  .footer-back {
+    justify-content: flex-start;
+  }
+}
+

@@ -1,116 +1,235 @@
-/* ====== Global ====== */
-body {
-  margin: 0;
-  font-family: "Segoe UI", "Noto Sans Thai", sans-serif;
-  background: linear-gradient(135deg, #0d0d16 0%, #1a1a2e 50%, #3a0ca3 100%);
-  color: #fff;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 40px 20px;
+/* =========================================================
+   THEME & BASE
+   ========================================================= */
+:root{
+  --bg1:#0b0b15; --bg2:#1c1731; --bg3:#3d0ea6;
+  --glass:rgba(20,20,40,.75);
+  --border:#7c3aed;
+  --neon:#c77dff;
+  --pink:#ff5bd3;
+  --cyan:#34d8ff;
+  --ok:#00ffaa;
+  --warn:#ff5078;
+  --white:#ffffff;
 }
 
-.container {
-  max-width: 600px;
-  width: 100%;
+*{ box-sizing:border-box }
+html,body{ height:100% }
+
+body{
+  margin:0;
+  font-family:"Segoe UI","Noto Sans Thai",system-ui,sans-serif;
+  color:var(--white);
+  background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 55%,var(--bg3) 100%);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:28px 16px;
 }
 
-/* ====== Heading ====== */
-h2 {
-  font-size: 1.6rem;
-  font-weight: bold;
-  margin-bottom: 20px;
-  color: #c77dff; /* ม่วงนีออน */
-  text-shadow: 0 0 6px rgba(199, 125, 255, 0.8);
+.container{ width:100%; max-width:420px }
+
+/* ---------- Tokens (เลขแต้ม/ชิปสถานะ) ---------- */
+.points{
+  font:700 22px/1 "Segoe UI","Noto Sans Thai",sans-serif;
+  color:#ff4dff;
+  text-shadow:0 0 5px rgba(255,77,255,.7);
+}
+.chip{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:600;
+}
+.chip-ok{  background:rgba(0,255,170,.15);  border:1px solid rgba(0,255,170,.6);  color:var(--ok) }
+.chip-warn{background:rgba(255,80,120,.15); border:1px solid rgba(255,80,120,.6); color:var(--warn) }
+
+/* =========================================================
+   HERO (หัวการ์ด Pubcast)
+   ========================================================= */
+.hero{
+  position:relative;
+  border-radius:22px;
+  overflow:hidden;
+  margin-bottom:18px;
+  box-shadow:0 14px 40px rgba(0,0,0,.35);
+  background:transparent;
+}
+.hero::before{
+  content:"";
+  position:absolute; inset:0 0 40% 0;
+  background:linear-gradient(135deg,#A46BFF 0%,#7F5BFF 45%,#B07BFF 100%);
+}
+.hero-top{
+  position:relative; z-index:1;
+  display:flex; justify-content:center; text-align:center;
+  padding:28px 16px 20px;
+}
+.hero--no-text .hero-text{ margin-left:0 }
+.hero-welcome-top{
+  font-weight:800; color:#fff; font-size:1.2rem;
+  text-shadow:0 0 8px rgba(255,255,255,.35);
 }
 
-/* ====== Card ====== */
-.card {
-  background: rgba(20, 20, 40, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(120, 0, 255, 0.5);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 0 15px rgba(120, 0, 255, 0.3);
+/* ส่วนล่างพื้นดำโค้งมน */
+.hero-bottom{
+  position:relative; z-index:2;
+  text-align:center; color:#fff; background:#000;
+  padding:24px 16px 22px;
+  border-top-left-radius:36px; border-top-right-radius:36px;
 }
 
-.points {
-  font-size: 22px;
-  font-weight: bold;
-  color: #ff4dff;
-  text-shadow: 0 0 5px rgba(255, 77, 255, 0.7);
+/* รายการข้อมูลในพื้นดำ */
+.hb-welcome{ font-weight:800; margin-bottom:8px; font-size:1rem }
+.hb-list{
+  list-style:none; padding:0; margin:0 0 10px;
+  display:grid; row-gap:6px;
+}
+.hb-list li{
+  display:flex; align-items:baseline; gap:6px;
+  font-size:.95rem; opacity:.95; flex-wrap:nowrap;
+}
+.hb-list li span:first-child{
+  opacity:.8; min-width:78px; display:inline-block;
+}
+.hb-list li:nth-child(3) .chip{ margin-left:8px; transform:translateY(4px); }
+
+/* =========================================================
+   PROMO BANNER
+   ========================================================= */
+.promo-banner{
+  position:relative; display:flex; align-items:center; gap:12px;
+  width:100%;
+  height: 100px;
+  background:linear-gradient(135deg, rgba(52,216,255,.95), rgba(199,125,255,.9));
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:16px;
+  padding:12px 14px; margin-bottom:12px;
+  text-decoration:none; color:#fff;
+  box-shadow:0 8px 20px rgba(0,0,0,.28);
+  overflow:hidden;
+}
+.promo-banner::before{
+  content:"";
+  position:absolute; inset:-30% -10% auto auto;
+  width:180px; height:180px; border-radius:50%;
+  background:radial-gradient(circle at center, rgba(255,255,255,.25), transparent 60%);
+  filter:blur(10px);
+}
+.badge{
+  background:#ffda3a; color:#2b1a00; font-weight:800;
+  padding:6px 10px; border-radius:10px; font-size:.9rem; white-space:nowrap;
+  box-shadow:0 4px 12px rgba(0,0,0,.25);
+}
+.promo-text .t1{ font-weight:800; letter-spacing:.1px }
+.promo-text .t2{ font-size:.85rem; opacity:.9 }
+
+/* =========================================================
+   TILES (ปุ่มแลกของ/แชท)
+   ========================================================= */
+.tile-area{ display:block }
+
+/* กริด 2 คอลัมน์สม่ำเสมอ */
+.tile-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:16px;
+  align-items:stretch;
 }
 
-/* ====== Chips ====== */
-.chip {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 500;
+.tile{
+  position:relative; overflow:hidden;
+  display:block; text-decoration:none; color:#fff;
+  border-radius:16px; padding:10px; min-height:112px;
+  background:linear-gradient(135deg, rgba(106,0,244,.95), rgba(199,125,255,.9));
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 10px 24px rgba(199,125,255,.28);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.tile:hover{ transform:translateY(-2px); box-shadow:0 12px 30px rgba(199,125,255,.36) }
+.tile::after{
+  content:""; position:absolute; inset:auto -10% -25% auto;
+  width:140px; height:140px; transform:rotate(-18deg);
+  background:linear-gradient(135deg, rgba(52,216,255,.55), rgba(255,91,211,.45));
+  filter:blur(14px); opacity:.5;
 }
 
-.chip-ok {
-  background: rgba(0, 255, 170, 0.15);
-  border: 1px solid rgba(0, 255, 170, 0.6);
-  color: #00ffaa;
+/* กล่องไอคอนใส + รูปด้านใน */
+.tile-icon{
+  width:56px; height:56px; border-radius:14px; margin-bottom:10px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.25);
+  box-shadow:inset 0 0 14px rgba(255,255,255,.15);
+  overflow:hidden;
+}
+.tile-img{
+  width:70%; height:70%; object-fit:contain;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.35));
+  transition:transform .15s ease;
+}
+.tile:hover .tile-img{ transform:scale(1.08) }
+
+/* เฉดสีตามชนิดปุ่ม */
+.tile.redeem{ background:linear-gradient(135deg, rgba(106,0,244,.95), rgba(199,125,255,.9)) }
+.tile.chat{   background:linear-gradient(135deg, rgba(52,216,255,.95), rgba(199,125,255,.9)) }
+
+.tile-icon.redeem-ic{
+  background:linear-gradient(135deg, rgba(255,255,255,.20), rgba(255,91,211,.28));
+}
+.tile-icon.chat-ic{
+  background:linear-gradient(135deg, rgba(255,255,255,.20), rgba(52,216,255,.28));
 }
 
-.chip-warn {
-  background: rgba(255, 80, 120, 0.15);
-  border: 1px solid rgba(255, 80, 120, 0.6);
-  color: #ff5078;
+.tile-title{ font-weight:800; letter-spacing:.2px }
+.tile .plus{
+  position:absolute; right:10px; top:10px; width:28px; height:28px; border-radius:50%;
+  display:grid; place-items:center; font-size:18px; font-weight:800;
+  background:rgba(91, 64, 64, 0.2); border:1px solid rgba(255,255,255,.45);
 }
 
-/* ====== Buttons ====== */
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+/* =========================================================
+   LOGOUT BUTTON (แทรกระหว่างการ์ด + จัดกึ่งกลาง)
+   ========================================================= */
+.aux-row{
+  grid-column:1 / -1;           /* กินทั้งความกว้างกริด */
+  display:flex;
+  justify-content:center;       /* กึ่งกลางแนวนอน */
+  margin:4px 0 0;               /* ระยะห่างพอดี */
 }
 
-.btn {
-  flex: 1;
-  min-width: 130px;
-  text-align: center;
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 14px;
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.3s ease;
+/* กรอบเล็กลงเล็กน้อยด้วย max-width */
+.btn-danger{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:min(100%, 340px);
+  padding:14px 16px;
+  border-radius:12px;
+  background:rgba(255,77,77,.10);
+  border:1px solid rgba(255,77,77,.40);
+  backdrop-filter:blur(8px);
+  font-size:1rem; font-weight:700; color:#ffd6d6;
+  text-decoration:none; letter-spacing:.3px;
+  box-shadow:0 4px 16px rgba(255,77,77,.25), inset 0 0 10px rgba(255,77,77,.25);
+  transition:all .2s ease;
+}
+.btn-danger:hover{
+  background:rgba(255,77,77,.18);
+  box-shadow:0 8px 22px rgba(255,77,77,.35), inset 0 0 14px rgba(255,77,77,.35);
+  transform:translateY(-1px);
+}
+.btn-danger:active{
+  transform:translateY(0);
+  box-shadow:0 3px 10px rgba(255,77,77,.25), inset 0 0 6px rgba(255,77,77,.25);
 }
 
-.btn-primary {
-  background: linear-gradient(90deg, #6a00f4, #c77dff);
-  color: #fff;
-  border: none;
-  box-shadow: 0 0 10px rgba(199, 125, 255, 0.6);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(90deg, #c77dff, #6a00f4);
-  box-shadow: 0 0 20px rgba(199, 125, 255, 0.8);
-}
-
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.btn-danger {
-  background: rgba(255, 77, 77, 0.2);
-  border: 1px solid rgba(255, 77, 77, 0.7);
-  color: #ff4d4d;
-}
-
-.btn-danger:hover {
-  background: rgba(255, 77, 77, 0.4);
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:360px){
+  .btn-danger{ width:100% }               /* มือถือจอเล็กมากให้เต็มกว้าง */
+  .hb-list li:nth-child(3){ flex-wrap:wrap }
+  .hb-list li:nth-child(3) .chip{ transform:none; margin-top:6px }
 }
