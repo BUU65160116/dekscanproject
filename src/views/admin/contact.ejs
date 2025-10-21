@@ -104,15 +104,21 @@ var due = amountTotal - amountPaid;
   </div>
 
 <!-- ส่งรายชื่อทั้งหมดลง JS (ใช้งาน bulk) -->
+<!-- ฝังข้อมูลเป็น JSON แท้ ๆ (Editor ไม่เตือน) -->
+<script id="contacts-json" type="application/json">
+<%- JSON.stringify(
+  (contactsSafe || []).map(p => ({
+    name:  (p && p.name)  ? p.name  : "",
+    phone: (p && p.phone) ? p.phone : ""
+  }))
+) %>
+</script>
+
 <script>
-  window.CONTACTS_DATA = <%- JSON.stringify(
-    (contactsSafe || []).map(function (p) {
-      return {
-        name:  (p && p.name)  ? p.name  : "",
-        phone: (p && p.phone) ? p.phone : ""
-      };
-    })
-  ) %>;
+  // อ่านกลับมาใช้งานใน JS
+  window.CONTACTS_DATA = JSON.parse(
+    document.getElementById('contacts-json').textContent
+  );
 </script>
 
 <!-- Dialog ฟอร์มบันทึกค้างชำระ (เวอร์ชันรวม) -->
