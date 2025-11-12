@@ -6,7 +6,7 @@ import { prefillContact } from "../controllers/unpaid.controller";
 
 const router = Router();
 
-// คงพาธเดิมทุกอย่าง
+// พาธเดิมทุกอย่าง
 router.get("/unpaid/data", adminAuth, getUnpaidData);
 
 //   GET ให้เปิดหน้า contact 

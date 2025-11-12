@@ -13,6 +13,22 @@ export async function exec(sql: string, params: any[] = []): Promise<ResultSetHe
   return res;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ===== ตัวอย่างฟังก์ชันเฉพาะโดเมน (ยังไม่บังคับใช้) =====
    ถ้าใน user.controller.ts มีคิวรีเหล่านี้อยู่แล้ว ค่อย ๆ ย้ายมาได้ทีหลังแบบ 1:1
 

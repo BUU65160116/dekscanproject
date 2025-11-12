@@ -12,7 +12,7 @@ const REWARDS: Record<string, string> = {
 
 const COST = 10; // ใช้ 10 แต้มต่อการแลก 1 ครั้ง
 
-/** GET /points  แสดงหน้าแต้ม + ปุ่มแลก + ประวัติแลก 5 รายการล่าสุด */
+/** GET /points  แสดงหน้าแต้ม + ปุ่มแลก + ประวัติแลก รายการล่าสุด */
 export async function showPointsPage(req: Request, res: Response) {
   if (!req.session?.user) return res.redirect("/login");
   const user = req.session.user;
